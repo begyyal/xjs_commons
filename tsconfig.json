@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", 
+    "module": "CommonJS",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "removeComments": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "outDir": "dist"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/**/*.js"
+  ]
+}
