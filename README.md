@@ -1,10 +1,12 @@
 
+ Available to `npm i xjs-common`.
+
 # Overview
 Library modules for nodejs that bundled general-purpose implementations.  
 For example, this includes following currently.
- - Enhanced http client for scraping.
- - Simple transaction decorator. 
- - Utility for array manipulation.
+ - Enhanced http client for scraping (`HttpResolver`).
+ - Simple transaction decorator (`@transation()`). 
+ - Utility for array manipulation (`UArray`).
  - etc...
 
 ## Error definition
