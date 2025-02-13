@@ -13,5 +13,6 @@ For example, this includes following currently.
 XJS throws error with `code` property which has one of the following numbers.
 |code|thrown by|
 |:---|:---|
+|10|`func/u`|
 |100|`func/decorator/transaction`|
 |200|`prcs/http-resolver`|

@@ -2,7 +2,7 @@
 export namespace UArray {
     export function eq<T>(v1: T[], v2: T[]): boolean {
         return (!v1 && !v2 || v1 && v2) &&
-            v1.length == v2.length &&
+            v1.length === v2.length &&
             v1.every(v1v => v2.includes(v1v));
     }
     export function distinct<T>(array: T[], predicate?: (v1: T, v2: T) => boolean, takeLast?: boolean): T[] {

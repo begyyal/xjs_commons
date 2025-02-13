@@ -7,7 +7,7 @@ export namespace UHttp {
         return Math.floor(statusCode / 100);
     }
     export function concatParamsWithEncoding(end: string, params: { [k: string]: string | string[] }): string {
-        if (!params || Object.keys(params).length == 0) return end;
+        if (!params || Object.keys(params).length === 0) return end;
         const paramsFlatten = Object.entries(params)
             .flatMap(kv => Array.isArray(kv[1]) ? kv[1].map(v => [kv[0], v] as [string, string]) : [kv as [string, string]]);
         let result = end ? end + "?" : "";

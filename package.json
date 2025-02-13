@@ -1,8 +1,11 @@
 {
   "name": "xjs-common",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "library modules for nodejs that bundled general-purpose implementations.",
-  "repository": "https://github.com/begyyal/xjs_commons",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/begyyal/xjs_commons"
+  },
   "keywords": [
     "node",
     "http",
