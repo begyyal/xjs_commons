@@ -1,3 +1,4 @@
+import { array2map } from "./u";
 
 export namespace UArray {
     export function eq<T>(v1: T[], v2: T[]): boolean {
@@ -5,9 +6,18 @@ export namespace UArray {
             v1.length === v2.length &&
             v1.every(v1v => v2.includes(v1v));
     }
-    export function distinct<T>(array: T[], predicate?: (v1: T, v2: T) => boolean, takeLast?: boolean): T[] {
-        const a = takeLast ? [...array].reverse() : array;
-        return a.filter((v, i) => a.findIndex(v2 => predicate ? predicate(v, v2) : v == v2) == i);
+    export function distinct<T>(array: T[]): T[];
+    export function distinct<T>(array: T[],
+        op: { k: keyof T, takeLast?: boolean }): T[];
+    export function distinct<T>(array: T[],
+        op: { predicate: (v1: T, v2: T) => boolean, takeLast?: boolean }): T[]
+    export function distinct<T>(array: T[],
+        op?: { k?: keyof T, predicate?: (v1: T, v2: T) => boolean, takeLast?: boolean }): T[] {
+        if (!array || array.length === 0) return [];
+        if (op?.k)
+            return Array.from(array2map(array, e => e[op.k]).values()).map(a => op?.takeLast ? a.pop() : a.shift());
+        const a = op?.takeLast ? [...array].reverse() : array;
+        return a.filter((v, i) => a.findIndex(v2 => op?.predicate ? op?.predicate(v, v2) : v == v2) === i);
     }
     export function chop<T>(array: T[], len: number): T[][] {
         return [...Array(Math.ceil(array.length / len)).keys()]
@@ -18,11 +28,11 @@ export namespace UArray {
             });
     }
     export function remove<T>(array: T[], v: T): void {
-        var idx = array.indexOf(v);
+        const idx = array.indexOf(v);
         if (idx !== -1) array.splice(idx, 1);
     }
     export function takeOut<T>(array: T[], filter: (v: T, i?: number) => boolean): T[] {
-        let result = [];
+        const result = [];
         for (let i = array.length - 1; i >= 0; i--)
             if (filter(array[i], i)) {
                 result.unshift(array[i]);

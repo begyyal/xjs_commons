@@ -14,5 +14,6 @@ XJS throws error with `code` property which has one of the following numbers.
 |code|thrown by|
 |:---|:---|
 |10|`func/u`|
+|20|`func/u-string`|
 |100|`func/decorator/transaction`|
 |200|`prcs/http-resolver`|

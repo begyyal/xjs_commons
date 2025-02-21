@@ -12,7 +12,8 @@
     "utility"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "node ./dist/test/test.js"
   },
   "author": "begyyal",
   "license": "ISC",
