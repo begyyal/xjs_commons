@@ -1,13 +1,10 @@
+[![CI](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml/badge.svg)](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml)
 
- Available to `npm i xjs-common`.
+Available to `npm i xjs-common`.
 
 # Overview
 Library modules for nodejs that bundled general-purpose implementations.  
-For example, this includes following currently.
- - Enhanced http client for scraping (`HttpResolver`).
- - Simple transaction decorator (`@transation()`). 
- - Utility for array manipulation (`UArray`).
- - etc...
+This module is very simple, therefore it has no dependencies.
 
 ## Error definition
 XJS throws error with `code` property which has one of the following numbers.
