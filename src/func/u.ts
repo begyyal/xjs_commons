@@ -24,10 +24,6 @@ export function isDefined(v: any): boolean {
 export function bitor(...bit: number[]): number {
     return bit.reduce((a, b) => a | b);
 }
-export function assignProperties<T extends {}>(t: T, s: {}, ...keys: any[]): T {
-    for (const k of keys) if (isDefined(s[k])) t[k] = s[k];
-    return t;
-}
 export function checkPortAvailability(port: number): Promise<boolean> {
     return new Promise(resolve => {
         const server = require('net').createServer();

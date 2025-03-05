@@ -1,19 +1,11 @@
-import { int2array } from "../func/u";
 import { UArray } from "../func/u-array";
+import { genIF_A } from "./func/u";
+import { IF_A } from "./obj/if-common";
 
-interface Aaa {
-    id: number
-    a: string
-    b: string
-    c: string
-}
-function gen(len: number): Aaa[] {
-    return int2array(len).map(i => ({ id: i, a: "aaa", b: "bbb", c: "ccc" }));
-}
 function test1(): void {
-    let rcds: Aaa[] = gen(30000);
+    let rcds: IF_A[] = genIF_A(30000);
     const before = rcds.length;
-    rcds.push(...gen(30000));
+    rcds.push(...genIF_A(30000));
     rcds[0].a = "z";
     const t = Date.now();
     rcds = UArray.distinct(rcds, { k: "id" });
@@ -22,9 +14,9 @@ function test1(): void {
     if (rcds.find(r => r.id === 0).a !== "z") throw Error("[UArray.distinct] test1 - couldn't take first");
 }
 function test2(): void {
-    let rcds: Aaa[] = gen(30000);
+    let rcds: IF_A[] = genIF_A(30000);
     const before = rcds.length;
-    rcds.push(...gen(30000));
+    rcds.push(...genIF_A(30000));
     rcds[0].a = "z";
     const t = Date.now();
     rcds = UArray.distinct(rcds, { predicate: (v1, v2) => v1.id === v2.id });
@@ -33,18 +25,18 @@ function test2(): void {
     if (rcds.find(r => r.id === 0).a !== "z") throw Error("[UArray.distinct] test2 - couldn't take first");
 }
 function test3(): void {
-    let rcds: Aaa[] = gen(3);
-    rcds.push(...gen(3));
+    let rcds: IF_A[] = genIF_A(3);
+    rcds.push(...genIF_A(3));
     rcds[0].a = "z";
     rcds = UArray.distinct(rcds, { predicate: (v1, v2) => v1.id === v2.id, takeLast: true });
-    if (UArray.eq(gen(3), rcds)) throw Error("[UArray.distinct] test3 - couldn't take last");
+    if (UArray.eq(genIF_A(3), rcds)) throw Error("[UArray.distinct] test3 - couldn't take last");
 }
 function test4(): void {
-    let rcds: Aaa[] = gen(3);
-    rcds.push(...gen(3));
+    let rcds: IF_A[] = genIF_A(3);
+    rcds.push(...genIF_A(3));
     rcds[0].a = "z";
     rcds = UArray.distinct(rcds, { k: "id", takeLast: true });
-    if (UArray.eq(gen(3), rcds)) throw Error("[UArray.distinct] test4 - couldn't take last");
+    if (UArray.eq(genIF_A(3), rcds)) throw Error("[UArray.distinct] test4 - couldn't take last");
 }
 function test5(): void {
     const a = [1, 2, 4, 1, 2, 3, 6, 7, 3, 4, 6, 9, 2, 5, 0, 8];
@@ -60,4 +52,5 @@ export function T_UArray(): void {
     test3();
     test4();
     test5();
+    console.log("tests in T_UArray completed.");
 }
