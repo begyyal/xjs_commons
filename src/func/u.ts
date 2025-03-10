@@ -18,9 +18,6 @@ export function array2map<K, T>(array: T[], keyGen: (e: T) => K): Map<K, T[]> {
     }
     return map;
 }
-export function isDefined(v: any): boolean {
-    return typeof v !== "undefined";
-}
 export function bitor(...bit: number[]): number {
     return bit.reduce((a, b) => a | b);
 }

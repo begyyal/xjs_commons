@@ -1,3 +1,4 @@
+import { Type } from "../const/types";
 import { XjsErr } from "../obj/xjs-err";
 import { int2array } from "./u";
 
@@ -5,16 +6,13 @@ const s_errCode = 20;
 
 export namespace UString {
     export function eq(s1: string, s2: string): boolean {
-        return !s1 || !s2 ? s1 === s2 : s1.trim() === s2.trim();
+        return typeof s1 !== Type.string || typeof s2 !== Type.string ? s1 === s2 : s1.trim() === s2.trim();
     }
     export function simpleDate2sec(date?: Date): string {
         return (date ?? new Date()).toISOString().split(".")[0].replace(/[-T:]/g, "");
     }
     export function simpleDate2day(date?: Date): string {
         return simpleDate2sec(date).substring(0, 8);
-    }
-    export function jpy2num(str: string): number {
-        return Number(str.split(".")[0].replace(/\D+/g, ""));
     }
     export function trimProps(obj: any): void {
         Object.keys(obj)

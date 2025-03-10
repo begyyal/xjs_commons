@@ -25,7 +25,7 @@ export namespace UFile {
     }
     export function mv(from: string | string[], to: string | string[]): void {
         const f = join(from), t = join(to);
-        if (fs.existsSync(f)) {
+        if (fs.existsSync(f) && fs.statSync(f).isFile()) {
             fs.writeFileSync(t, fs.readFileSync(f));
             fs.rmSync(f, { force: true });
         }

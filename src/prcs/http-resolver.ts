@@ -24,8 +24,8 @@ const s_timeout = 1000 * 20;
 const s_errCode = 200;
 
 export class HttpResolver {
-    als = new AsyncLocalStorage<RequestContext>();
-    mode2headers = new Map<ClientMode, () => ({ [k: string]: string })>([
+    private readonly _als = new AsyncLocalStorage<RequestContext>();
+    private readonly _mode2headers = new Map<ClientMode, () => ({ [k: string]: string })>([
         [s_clientMode.firefox, () => ({
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "Accept-Encoding": "gzip, deflate, br",
@@ -53,13 +53,13 @@ export class HttpResolver {
             "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${cmv}.0.0.0 Safari/537.36`
         };
         if (cmv >= 124) ch["Priority"] = "u=0, i";
-        this.mode2headers.set(s_clientMode.chrome, () => ch);
+        this._mode2headers.set(s_clientMode.chrome, () => ch);
     }
     get(
         url: string,
         mode: ClientMode = s_clientMode.chrome,
         ignoreQuery: boolean = false): Promise<any> {
-        return this.als.run({ redirectCount: 0 }, this.getIn, url, mode, ignoreQuery);
+        return this._als.run({ redirectCount: 0 }, this.getIn, url, mode, ignoreQuery);
     }
     private getIn = (
         url: string,
@@ -82,17 +82,17 @@ export class HttpResolver {
             params.timeout = s_timeout;
             if (mode.id > 0) {
                 params.ciphers = this.createCiphers(mode);
-                const chHeaders = this.mode2headers.get(mode)();
+                const chHeaders = this._mode2headers.get(mode)();
                 params.headers = params.headers ? Object.assign(params.headers, chHeaders) : chHeaders
             }
-            if (this.als.getStore().cookies) this.setCookies(params.headers);
+            if (this._als.getStore().cookies) this.setCookies(params.headers);
             const req = request(params, (res: IncomingMessage) => {
                 const sc = UHttp.statusCategoryOf(res.statusCode);
                 if (sc === 3) {
                     if (!res.headers.location) throw new XjsErr(s_errCode, "Received http redirection, but no location header found.");
-                    if (this.als.getStore().redirectCount++ > 2) throw new XjsErr(s_errCode, "Count of http redirection exceeds limit.");
+                    if (this._als.getStore().redirectCount++ > 2) throw new XjsErr(s_errCode, "Count of http redirection exceeds limit.");
                     if (res.headers["set-cookie"]) this.storeCookies(res.headers["set-cookie"]);
-                    this.log(`Redirect to ${res.headers.location}. (count is ${this.als.getStore().redirectCount})`);
+                    this.log(`Redirect to ${res.headers.location}. (count is ${this._als.getStore().redirectCount})`);
                     res.on('end', () => { });
                     const dest = res.headers.location.startsWith("http") ? res.headers.location : `https://${params.host}${res.headers.location}`;
                     this.getIn(dest, mode, ignoreQuery).then(resolve).catch(reject);
@@ -138,20 +138,20 @@ export class HttpResolver {
         ].join(':');
     }
     private setCookies(headers: OutgoingHttpHeaders): void {
-        const cks = this.als.getStore().cookies;
+        const cks = this._als.getStore().cookies;
         headers.cookie = Object.keys(cks).map(ckk => `${ckk}=${cks[ckk]};`).join(" ");
     }
     private storeCookies(cookies: string[]): void {
-        this.als.getStore().cookies ??= {};
+        this._als.getStore().cookies ??= {};
         cookies.filter(c => c).flatMap(c => c.split(";"))
             .map(c => {
                 const idx = c.indexOf("=");
                 return idx !== -1 && [c.substring(0, idx).toLowerCase().trim(), c.substring(idx + 1)];
             })
             .filter(cp => cp && cp[0] && !["secure", "path", "domain", "samesite"].includes(cp[0]))
-            .forEach(cp => this.als.getStore().cookies[cp[0]] = cp[1]);
+            .forEach(cp => this._als.getStore().cookies[cp[0]] = cp[1]);
         this.log("Store cookies from set-cookie headers.");
-        this.log(JSON.stringify(this.als.getStore().cookies));
+        this.log(JSON.stringify(this._als.getStore().cookies));
     }
     private log(msg: string): void {
         this.l?.log(`[http-resolver] ${msg}`);

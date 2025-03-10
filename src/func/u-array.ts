@@ -1,11 +1,30 @@
 import { array2map } from "./u";
 
 export namespace UArray {
-    export function eq<T>(v1: T[], v2: T[]): boolean {
-        return (!v1 && !v2 || v1 && v2) &&
-            v1.length === v2.length &&
-            v1.every(v1v => v2.includes(v1v));
+    /** 
+     * compares two arrays to valuate equality. 
+     * if one side is null or undefined, it returns true when other side is the same.
+     * @param v1 it uses equal operator for comparing elements, so applying object element is not recommended.
+     * @param v2 same as v1.
+     * @param sort it uses {@link Array#sort} on v1 and v2 if true. default is true.
+     * @param useStrictEqual it uses === operator for compareing elements if true, otherwise using == operator. default is true.
+     */
+    export function eq(v1: any[], v2: any[], op: { sort?: boolean, useStrictEqual: false }): boolean;
+    export function eq<T>(v1: T[], v2: T[], op: { sort?: boolean, useStrictEqual: true }): boolean;
+    export function eq<T>(v1: T[], v2: T[], op: { sort?: boolean }): boolean;
+    export function eq<T>(v1: T[], v2: T[]): boolean;
+    export function eq<T>(v1: T[], v2: T[], op: { sort?: boolean, useStrictEqual?: boolean } = {}): boolean {
+        const { sort, useStrictEqual } = Object.assign({ sort: true, useStrictEqual: true }, op);
+        if (v1 && !v2 || !v1 && v2) return false;
+        if (!v1) return true;
+        if (v1.length !== v2.length) return false;
+        const a = sort ? [...v1].sort() : v1, b = sort ? [...v2].sort() : v2;
+        return a.every((v, i) => useStrictEqual ? v === b[i] : v == b[i]);
     }
+    /** 
+     * returns array which is removed duplicate of elements.
+     * this doesn't mutate the param. 
+     */
     export function distinct<T>(array: T[]): T[];
     export function distinct<T>(array: T[],
         op: { k: keyof T, takeLast?: boolean }): T[];
