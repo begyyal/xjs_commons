@@ -143,7 +143,7 @@ class Cls_B {
 (() => {
     // ===> below are valid cases.
     const valid_b1 = Object.assign(new Cls_B(), { aryB: [1, 2, 3], boolB: true });
-    const valid1 = { id: 0, strA: "a", objB: { aryB: [1, 2, 3], boolB: true } };
+    const valid1 = { id: 0, strA: "a", objA: valid_b1 };
     console.log(UType.validate(Object.assign(new Cls_A(), valid1))); // true
 
     const valid2 = { id: 0 };
