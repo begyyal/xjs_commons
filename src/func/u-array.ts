@@ -50,6 +50,12 @@ export namespace UArray {
         const idx = array.indexOf(v);
         if (idx !== -1) array.splice(idx, 1);
     }
+    export function randomPick<T>(array: T[], takeout: boolean = true): T {
+        const i = Math.floor(array.length * Math.random());
+        const r = array[i];
+        if (takeout) array.splice(i, 1);
+        return r;
+    }
     export function takeOut<T>(array: T[], filter: (v: T, i?: number) => boolean): T[] {
         const result = [];
         for (let i = array.length - 1; i >= 0; i--)

@@ -56,6 +56,14 @@ function test_eq(): void {
     if (UArray.eq(a, b, { sort: false }))
         throw Error("[UArray.eq] elements were sorted in spite of sort flag is false.");
 }
+function test_randomPick(): void {
+    const a = [1, 2, 3];
+    const r = UArray.randomPick(a);
+    if (!r) throw Error("[UArray.randomPick] no element returned.");
+    if (a.length !== 2) throw Error("[UArray.randomPick] a picked element remains in the array.");
+    UArray.randomPick(a, false);
+    if (a.length !== 2) throw Error("[UArray.randomPick] a picked element was taken out from the array.");
+}
 
 export function T_UArray(): void {
     test1();
@@ -64,5 +72,6 @@ export function T_UArray(): void {
     test4();
     test5();
     test_eq();
+    test_randomPick();
     console.log("tests in T_UArray completed.");
 }
