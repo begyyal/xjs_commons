@@ -1,4 +1,6 @@
-//const s_errCode = 10;
+import { XjsErr } from "../obj/xjs-err";
+
+const s_errCode = 10;
 
 export function getJSTDate(): Date {
     return new Date(Date.now() + 9 * 60 * 60 * 1000);
@@ -7,7 +9,9 @@ export function delay(sec: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, 1000 * sec));
 }
 export function int2array(size: number): number[] {
-    return Array.from(Array(size).keys());
+    const s = Number(size);
+    if (Number.isNaN(s)) throw new XjsErr(s_errCode, "size of the argument is not number.");
+    return Array.from(Array(s).keys());
 }
 export function array2map<K, T>(array: T[], keyGen: (e: T) => K): Map<K, T[]> {
     const map = new Map<K, T[]>();
