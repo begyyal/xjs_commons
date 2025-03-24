@@ -1,3 +1,4 @@
+import { int2array } from "../func/u";
 import { UArray } from "../func/u-array";
 import { genIF_A } from "./func/u";
 import { IF_A } from "./obj/if-common";
@@ -64,6 +65,14 @@ function test_randomPick(): void {
     UArray.randomPick(a, false);
     if (a.length !== 2) throw Error("[UArray.randomPick] a picked element was taken out from the array.");
 }
+function test_shuffle(): void {
+    const len = 10000;
+    const a = int2array(len);
+    const r = UArray.shuffle(a);
+    if (!UArray.eq(a, int2array(len), { sort: false })) throw Error("[UArray.shuffle] the elements mutated.");
+    if (UArray.eq(r, a, { sort: false }) || int2array(3).some(_ => UArray.eq(r, UArray.shuffle(a), { sort: false })))
+        throw Error("[UArray.shuffle] not working.");
+}
 
 export function T_UArray(): void {
     test1();
@@ -73,5 +82,6 @@ export function T_UArray(): void {
     test5();
     test_eq();
     test_randomPick();
+    test_shuffle();
     console.log("tests in T_UArray completed.");
 }

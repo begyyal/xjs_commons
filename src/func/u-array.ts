@@ -1,4 +1,4 @@
-import { array2map } from "./u";
+import { array2map, int2array } from "./u";
 
 export namespace UArray {
     /** 
@@ -55,6 +55,10 @@ export namespace UArray {
         const r = array[i];
         if (takeout) array.splice(i, 1);
         return r;
+    }
+    export function shuffle<T>(array: T[]): T[] {
+        const cp = [...array];
+        return int2array(array.length).map(i => randomPick(cp));
     }
     export function takeOut<T>(array: T[], filter: (v: T, i?: number) => boolean): T[] {
         const result = [];
