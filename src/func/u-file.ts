@@ -12,7 +12,7 @@ export namespace UFile {
         fs.writeFileSync(join(p), c);
     }
     export function exists(...p: string[]): boolean {
-        return fs.existsSync(path.join(...p));
+        return !!p && fs.existsSync(path.join(...p));
     }
     export function read(p: string | string[]): Buffer;
     export function read(p: string | string[], encoding: BufferEncoding): string;
