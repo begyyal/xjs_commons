@@ -1,6 +1,6 @@
 {
   "name": "xjs-common",
-  "version": "4.3.0",
+  "version": "4.3.2",
   "description": "library modules for nodejs that bundled general-purpose implementations.",
   "repository": {
     "type": "git",
