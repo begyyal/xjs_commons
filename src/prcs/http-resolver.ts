@@ -77,7 +77,7 @@ export class HttpResolver {
     /**
      * request to the url with GET.
      * @param url target url.
-     * @param op.mode client type that is imitated. {@link s_clientMode}
+     * @param op.mode {@link s_clientMode} that is imitated. default is random between chrome or firefox.
      * @param op.proxy proxy configuration.
      * @param op.ignoreQuery if true, query part in the `url` is ignored.
      * @returns string encoded by utf-8 as response payload.
