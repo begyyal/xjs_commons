@@ -20,5 +20,6 @@ export enum HttpMethod {
     Put,
     Post,
     Delete,
-    Patch
+    Patch,
+    Connect
 }

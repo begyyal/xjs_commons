@@ -58,7 +58,7 @@ export namespace UArray {
     }
     export function shuffle<T>(array: T[]): T[] {
         const cp = [...array];
-        return int2array(array.length).map(i => randomPick(cp));
+        return int2array(array.length).map(_ => randomPick(cp));
     }
     export function takeOut<T>(array: T[], filter: (v: T, i?: number) => boolean): T[] {
         const result = [];

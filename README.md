@@ -170,21 +170,24 @@ class Cls_B {
 ```
  - Http client.
 ```ts
-import { HttpResolver } from "../prcs/http-resolver";
+import { HttpResolver, s_clientMode } from "../prcs/http-resolver";
 
 (async () => {
     const chromeMajorVersion = 131;
 
-    // can customize logging.
-    // const logger = { log: console.log, warn: console.warn };
+    // can customize logging. (default is console.)
     // const http = new HttpResolver(chromeMajorVersion, logger);
     const http = new HttpResolver(chromeMajorVersion);
 
-    // can switch tls ciphers order pattern by passing clientMode. (default is chrome.)
-    // const body = await http.get("https://books.toscrape.com", s_clientMode.firefox);
+    // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
+    let body = await http.get("https://books.toscrape.com", { mode: s_clientMode.firefox });
 
-    // implicitly corresponds to cookkie and redirect.
-    const body = await http.get("https://books.toscrape.com");
+    // use proxy by passing the configuration.
+    const proxy = { server: "proxy.sample.com", port: 8080, auth: { name: "prx", pass: "****" } }
+    body = await http.get("https://books.toscrape.com", { proxy });
+
+    // implicitly corresponds to cookies and redirect.
+    body = await http.get("https://books.toscrape.com");
     console.log(body);
 })();
 ```

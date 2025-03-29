@@ -1,32 +1,43 @@
 import * as tls from "tls";
 import * as zlib from "zlib";
 import { URL } from "url";
-import { request, RequestOptions } from "https";
-import { IncomingMessage, OutgoingHttpHeaders } from "http";
+import { Agent, request as requestTls, RequestOptions } from "https";
+import { request, IncomingMessage, OutgoingHttpHeaders } from "http";
 import { AsyncLocalStorage } from "async_hooks";
-import { UHttp } from "..";
 import { XjsErr } from "../obj/xjs-err";
+import { UHttp } from "../func/u-http";
+import { UArray } from "../func/u-array";
 
-export interface ClientMode {
-    id: number
-    cipherOrder: number[]
+export const s_clientMode: Record<string, ClientMode> = {
+    nodejs: { id: 0, cipherOrder: null },
+    chrome: { id: 1, cipherOrder: [2, 0, 1] },
+    firefox: { id: 2, cipherOrder: [2, 1, 0] }
+};
+interface ClientMode {
+    id: number;
+    cipherOrder: number[];
 }
 interface RequestContext {
-    redirectCount: number
-    cookies?: { [k: string]: string }
+    mode: ClientMode;
+    cmv: number;
+    ciphers: string;
+    redirectCount: number;
+    cookies?: Record<string, string>;
+    proxyAgent?: Agent;
 }
-export const s_clientMode = {
-    nodejs: { id: 0, cipherOrder: null } as ClientMode,
-    chrome: { id: 1, cipherOrder: [2, 0, 1] } as ClientMode,
-    firefox: { id: 2, cipherOrder: [2, 1, 0] } as ClientMode
-};
+interface ProxyConfig {
+    server: string,
+    port: number,
+    auth?: { name: string, pass: string }
+}
+const s_cmvRange = 5;
 const s_timeout = 1000 * 20;
 const s_errCode = 200;
 
 export class HttpResolver {
     private readonly _als = new AsyncLocalStorage<RequestContext>();
-    private readonly _mode2headers = new Map<ClientMode, () => ({ [k: string]: string })>([
-        [s_clientMode.firefox, () => ({
+    private readonly _mode2headers = new Map<ClientMode, (cmv: number) => (Record<string, string>)>([
+        [s_clientMode.firefox, (cmv: number) => ({
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-US,en;q=0.5",
@@ -35,58 +46,103 @@ export class HttpResolver {
             "Sec-Fetch-Site": "none",
             "Sec-Fetch-User": "?1",
             "Upgrade-Insecure-Requests": "1",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0"
-        })]]);
-    constructor(cmv: number, private l?: { log: (msg: any) => void, warn: (msg: any) => void }) {
-        const ch = {
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Sec-Ch-Ua": `"Not/A)Brand";v="8", "Chromium";v="${cmv}", "Google Chrome";v="${cmv}"`,
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": "Windows",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-User": "?1",
-            "Upgrade-Insecure-Requests": "1",
-            "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${cmv}.0.0.0 Safari/537.36`
-        };
-        if (cmv >= 124) ch["Priority"] = "u=0, i";
-        this._mode2headers.set(s_clientMode.chrome, () => ch);
-    }
-    get(
+            "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:${cmv}.0) Gecko/20100101 Firefox/${cmv}.0`
+        })],
+        [s_clientMode.chrome, (cmv: number) => {
+            const uad = cmv < 130
+                ? `"Not/A)Brand";v="8", "Chromium";v="${cmv}", "Google Chrome";v="${cmv}"`
+                : `"Chromium";v="${cmv}", "Not:A-Brand";v="24", "Google Chrome";v="${cmv}"`;
+            const ch = {
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "Accept-Encoding": "gzip, deflate, br, zstd",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-Ch-Ua": uad,
+                "Sec-Ch-Ua-Mobile": "?0",
+                "Sec-Ch-Ua-Platform": "Windows",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Sec-Fetch-User": "?1",
+                "Upgrade-Insecure-Requests": "1",
+                "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${cmv}.0.0.0 Safari/537.36`
+            };
+            if (cmv >= 124) ch["Priority"] = "u=0, i";
+            return ch;
+        }]]);
+    /** 
+     * @param _baseCmv chrome major version refered when construct a user agent, and the version will be randomized between `n` to `n-4`.
+     * @param _l custom logger. default is `console`.
+     */
+    constructor(private _baseCmv: number, private _l: { log: (msg: any) => void, warn: (msg: any) => void } = console) { }
+    /**
+     * request to the url with GET.
+     * @param url target url.
+     * @param op.mode client type that is imitated. {@link s_clientMode}
+     * @param op.proxy proxy configuration.
+     * @param op.ignoreQuery if true, query part in the `url` is ignored.
+     * @returns string encoded by utf-8 as response payload.
+     */
+    async get(
         url: string,
-        mode: ClientMode = s_clientMode.chrome,
-        ignoreQuery: boolean = false): Promise<any> {
-        return this._als.run({ redirectCount: 0 }, this.getIn, url, mode, ignoreQuery);
+        op?: {
+            mode?: ClientMode,
+            ignoreQuery?: boolean,
+            proxy?: ProxyConfig
+        }): Promise<any> {
+        const cmv = this._baseCmv - Math.floor(Math.random() * s_cmvRange);
+        const m = op?.mode ?? UArray.randomPick([s_clientMode.chrome, s_clientMode.firefox]);
+        const ciphers = this.createCiphers(m);
+        const u = new URL(url);
+        const proxyAgent = op?.proxy && await this.createProxyAgent(u, op.proxy);
+        this._l.log(`Starts to request with ${Object.keys(s_clientMode).find((_, i) => i === m.id)}:${cmv}.`);
+        return await this._als.run({ mode: m, cmv, ciphers, redirectCount: 0, proxyAgent }, this.getIn, u, !!op?.ignoreQuery);
+    }
+    private createProxyAgent(u: URL, conf: ProxyConfig): Promise<Agent> {
+        return new Promise((resolve, reject) => {
+            const headers = {}
+            if (conf.auth) headers['Proxy-Authorization'] = `Basic ${Buffer.from(conf.auth.name + ':' + conf.auth.pass).toString('base64')}`;
+            const req = request({
+                host: conf.server,
+                port: conf.port,
+                method: 'CONNECT',
+                path: `${u.hostname}:443`,
+                headers
+            }).on('connect', (res, socket) => {
+                if (res.statusCode === 200) resolve(new Agent({ socket: socket, keepAlive: true }));
+                else reject(new XjsErr(s_errCode, "Could not connect to proxy."));
+            });
+            req.on('error', reject);
+            req.on('timeout', () => {
+                req.destroy();
+                reject(new XjsErr(s_errCode, "The http request timeout, maybe server did not respond."));
+            });
+            req.end();
+        });
     }
     private getIn = (
-        url: string,
-        mode: ClientMode = s_clientMode.chrome,
-        ignoreQuery: boolean = false) => {
-        const u = new URL(url);
+        u: URL,
+        ignoreQuery: boolean = false): Promise<any> => {
         const params: RequestOptions = {};
         params.method = "GET";
         params.protocol = u.protocol;
         params.host = u.host;
         params.path = (ignoreQuery || !u.search) ? u.pathname : `${u.pathname}${u.search}`;
-        return this.reqHttps(params, null, mode);
+        params.agent = this._als.getStore().proxyAgent;
+        return this.reqHttps(params, null);
     };
     private reqHttps(
         params: RequestOptions,
         postData: any,
-        mode: ClientMode = s_clientMode.chrome,
         ignoreQuery: boolean = false): Promise<any> {
+        params.timeout = s_timeout;
+        if (this._als.getStore().mode.id > 0) {
+            params.ciphers = this._als.getStore().ciphers;
+            const chHeaders = this._mode2headers.get(this._als.getStore().mode)(this._als.getStore().cmv);
+            params.headers = params.headers ? Object.assign(params.headers, chHeaders) : chHeaders
+        }
+        if (this._als.getStore().cookies) this.setCookies(params.headers);
         return new Promise<any>((resolve, reject) => {
-            params.timeout = s_timeout;
-            if (mode.id > 0) {
-                params.ciphers = this.createCiphers(mode);
-                const chHeaders = this._mode2headers.get(mode)();
-                params.headers = params.headers ? Object.assign(params.headers, chHeaders) : chHeaders
-            }
-            if (this._als.getStore().cookies) this.setCookies(params.headers);
-            const req = request(params, (res: IncomingMessage) => {
+            const req = requestTls(params, (res: IncomingMessage) => {
                 const sc = UHttp.statusCategoryOf(res.statusCode);
                 if (sc === 3) {
                     if (!res.headers.location) throw new XjsErr(s_errCode, "Received http redirection, but no location header found.");
@@ -95,7 +151,7 @@ export class HttpResolver {
                     this.log(`Redirect to ${res.headers.location}. (count is ${this._als.getStore().redirectCount})`);
                     res.on('end', () => { });
                     const dest = res.headers.location.startsWith("http") ? res.headers.location : `https://${params.host}${res.headers.location}`;
-                    this.getIn(dest, mode, ignoreQuery).then(resolve).catch(reject);
+                    this.getIn(new URL(dest), ignoreQuery).then(resolve).catch(reject);
                     return;
                 }
                 const bfs: Buffer[] = [];
@@ -131,10 +187,7 @@ export class HttpResolver {
             defaultCiphers[mode.cipherOrder[0]],
             defaultCiphers[mode.cipherOrder[1]],
             defaultCiphers[mode.cipherOrder[2]],
-            ...defaultCiphers.slice(3)
-                .map(cipher => ({ cipher, sort: Math.random() }))
-                .sort((a, b) => a.sort - b.sort)
-                .map(({ cipher }) => cipher)
+            ...UArray.shuffle(defaultCiphers.slice(3))
         ].join(':');
     }
     private setCookies(headers: OutgoingHttpHeaders): void {
@@ -154,9 +207,9 @@ export class HttpResolver {
         this.log(JSON.stringify(this._als.getStore().cookies));
     }
     private log(msg: string): void {
-        this.l?.log(`[http-resolver] ${msg}`);
+        this._l.log(`[http-resolver] ${msg}`);
     }
     private warn(msg: string): void {
-        this.l?.warn(`[http-resolver] ${msg}`);
+        this._l.warn(`[http-resolver] ${msg}`);
     }
 }
