@@ -180,14 +180,14 @@ import { HttpResolver, s_clientMode } from "../prcs/http-resolver";
     const http = new HttpResolver(chromeMajorVersion);
 
     // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
-    let body = await http.get("https://books.toscrape.com", { mode: s_clientMode.firefox });
+    let body = await http.get("https://begyyal.net", { mode: s_clientMode.firefox });
 
     // use proxy by passing the configuration.
     const proxy = { server: "proxy.sample.com", port: 8080, auth: { name: "prx", pass: "****" } }
-    body = await http.get("https://books.toscrape.com", { proxy });
+    body = await http.get("https://begyyal.net", { proxy });
 
     // implicitly corresponds to cookies and redirect.
-    body = await http.get("https://books.toscrape.com");
+    body = await http.get("https://begyyal.net");
     console.log(body);
 })();
 ```

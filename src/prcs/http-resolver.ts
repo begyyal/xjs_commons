@@ -22,8 +22,11 @@ interface RequestContext {
     cmv: number;
     ciphers: string;
     redirectCount: number;
+    redirectAsNewRequest: boolean;
     cookies?: Record<string, string>;
     proxyAgent?: Agent;
+    proxyConfig?: ProxyConfig;
+    ignoreQuery: boolean;
 }
 interface ProxyConfig {
     server: string,
@@ -80,6 +83,7 @@ export class HttpResolver {
      * @param op.mode {@link s_clientMode} that is imitated. default is random between chrome or firefox.
      * @param op.proxy proxy configuration.
      * @param op.ignoreQuery if true, query part in the `url` is ignored.
+     * @param op.redirectAsNewRequest handle redirect as new request. this may be efficient when using proxy which is implemented reverse proxy.
      * @returns string encoded by utf-8 as response payload.
      */
     async get(
@@ -87,15 +91,25 @@ export class HttpResolver {
         op?: {
             mode?: ClientMode,
             ignoreQuery?: boolean,
-            proxy?: ProxyConfig
+            proxy?: ProxyConfig,
+            redirectAsNewRequest?: boolean
         }): Promise<any> {
-        const cmv = this._baseCmv - Math.floor(Math.random() * s_cmvRange);
+        const cmv = this.fixCmv();
         const m = op?.mode ?? UArray.randomPick([s_clientMode.chrome, s_clientMode.firefox]);
         const ciphers = this.createCiphers(m);
         const u = new URL(url);
         const proxyAgent = op?.proxy && await this.createProxyAgent(u, op.proxy);
         this._l.log(`Starts to request with ${Object.keys(s_clientMode).find((_, i) => i === m.id)}:${cmv}.`);
-        return await this._als.run({ mode: m, cmv, ciphers, redirectCount: 0, proxyAgent }, this.getIn, u, !!op?.ignoreQuery);
+        const rc: RequestContext = {
+            mode: m, cmv, ciphers,
+            ignoreQuery: !!op?.ignoreQuery,
+            redirectCount: 0, redirectAsNewRequest: !!op?.redirectAsNewRequest,
+            proxyAgent, proxyConfig: op?.proxy
+        };
+        return await this._als.run(rc, this.getIn, u).finally(() => proxyAgent?.destroy());
+    }
+    private fixCmv(): number {
+        return this._baseCmv - Math.floor(Math.random() * s_cmvRange);
     }
     private createProxyAgent(u: URL, conf: ProxyConfig): Promise<Agent> {
         return new Promise((resolve, reject) => {
@@ -108,7 +122,7 @@ export class HttpResolver {
                 path: `${u.hostname}:443`,
                 headers
             }).on('connect', (res, socket) => {
-                if (res.statusCode === 200) resolve(new Agent({ socket: socket, keepAlive: true }));
+                if (res.statusCode === 200) resolve(new Agent({ socket, keepAlive: true }));
                 else reject(new XjsErr(s_errCode, "Could not connect to proxy."));
             });
             req.on('error', reject);
@@ -119,39 +133,35 @@ export class HttpResolver {
             req.end();
         });
     }
-    private getIn = (
-        u: URL,
-        ignoreQuery: boolean = false): Promise<any> => {
+    private getIn = async (u: URL): Promise<any> => {
         const params: RequestOptions = {};
+        const rc = this._als.getStore();
+        const toRefresh = rc.redirectCount > 0 && rc.redirectAsNewRequest;
         params.method = "GET";
         params.protocol = u.protocol;
         params.host = u.host;
-        params.path = (ignoreQuery || !u.search) ? u.pathname : `${u.pathname}${u.search}`;
-        params.agent = this._als.getStore().proxyAgent;
-        return this.reqHttps(params, null);
+        params.path = (rc.ignoreQuery || !u.search) ? u.pathname : `${u.pathname}${u.search}`;
+        params.agent = toRefresh ? await this.createProxyAgent(u, rc.proxyConfig) : rc.proxyAgent;
+        if (toRefresh) {
+            rc.cmv = this.fixCmv();
+            rc.ciphers = this.createCiphers(rc.mode);
+        }
+        return await this.reqHttps(params, null);
     };
-    private reqHttps(
-        params: RequestOptions,
-        postData: any,
-        ignoreQuery: boolean = false): Promise<any> {
+    private reqHttps(params: RequestOptions, postData: any): Promise<any> {
         params.timeout = s_timeout;
-        if (this._als.getStore().mode.id > 0) {
-            params.ciphers = this._als.getStore().ciphers;
-            const chHeaders = this._mode2headers.get(this._als.getStore().mode)(this._als.getStore().cmv);
+        const rc = this._als.getStore();
+        if (rc.mode.id > 0) {
+            params.ciphers = rc.ciphers;
+            const chHeaders = this._mode2headers.get(rc.mode)(rc.cmv);
             params.headers = params.headers ? Object.assign(params.headers, chHeaders) : chHeaders
         }
-        if (this._als.getStore().cookies) this.setCookies(params.headers);
+        if (rc.cookies && !rc.redirectAsNewRequest) this.setCookies(params.headers);
         return new Promise<any>((resolve, reject) => {
             const req = requestTls(params, (res: IncomingMessage) => {
                 const sc = UHttp.statusCategoryOf(res.statusCode);
                 if (sc === 3) {
-                    if (!res.headers.location) throw new XjsErr(s_errCode, "Received http redirection, but no location header found.");
-                    if (this._als.getStore().redirectCount++ > 2) throw new XjsErr(s_errCode, "Count of http redirection exceeds limit.");
-                    if (res.headers["set-cookie"]) this.storeCookies(res.headers["set-cookie"]);
-                    this.log(`Redirect to ${res.headers.location}. (count is ${this._als.getStore().redirectCount})`);
-                    res.on('end', () => { });
-                    const dest = res.headers.location.startsWith("http") ? res.headers.location : `https://${params.host}${res.headers.location}`;
-                    this.getIn(new URL(dest), ignoreQuery).then(resolve).catch(reject);
+                    this.handleRedirect(res, params.host).then(resolve).catch(reject).finally(() => res.destroy());
                     return;
                 }
                 const bfs: Buffer[] = [];
@@ -180,6 +190,16 @@ export class HttpResolver {
             if (postData) req.write(postData);
             req.end();
         });
+    }
+    private handleRedirect(res: IncomingMessage, host: string): Promise<any> {
+        const rc = this._als.getStore();
+        if (!res.headers.location) throw new XjsErr(s_errCode, "Received http redirection, but no location header found.");
+        if (rc.redirectCount++ > 2) throw new XjsErr(s_errCode, "Count of http redirection exceeds limit.");
+        if (res.headers["set-cookie"] && !rc.redirectAsNewRequest) this.storeCookies(res.headers["set-cookie"]);
+        this.log(`Redirect to ${res.headers.location}. (count is ${rc.redirectCount})`);
+        const dest = res.headers.location.startsWith("http") ? res.headers.location : `https://${host}${res.headers.location}`;
+        if (rc.redirectAsNewRequest) rc.proxyAgent?.destroy();
+        return this.getIn(new URL(dest));
     }
     private createCiphers(mode: ClientMode): string {
         const defaultCiphers = tls.DEFAULT_CIPHERS.split(':');
