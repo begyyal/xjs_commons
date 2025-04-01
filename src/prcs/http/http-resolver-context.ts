@@ -9,7 +9,8 @@ import { UHttp } from "../../func/u-http";
 import { UArray } from "../../func/u-array";
 import { HttpMethod } from "../../const/http-method";
 import { Type } from "../../const/types";
-import { ClientMode, ClientOption, ProxyConfig, RequestOption } from "./http-resolver";
+import { ClientMode, ProxyConfig } from "./http-resolver";
+import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
 
 interface RequestContext extends RequestOption {
     redirectCount: number;
@@ -58,7 +59,7 @@ const s_mode2headers = new Map<ClientMode, (cmv: number) => (Record<string, stri
         return ch;
     }]]);
 
-export class HttpResolverContext {
+export class HttpResolverContext implements IHttpClient {
     private readonly _als = new AsyncLocalStorage<RequestContext>();
     private readonly _mode: ClientMode;
     private readonly _ciphers: string;

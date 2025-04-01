@@ -1,6 +1,6 @@
-import { OutgoingHttpHeaders } from "http";
 import { XjsErr } from "../../obj/xjs-err";
 import { HttpResolverContext } from "./http-resolver-context";
+import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
 
 export interface ClientMode {
     id: number;
@@ -11,16 +11,8 @@ export interface ProxyConfig {
     port: number;
     auth?: { name: string, pass: string };
 }
-export interface ClientOption {
-    mode?: ClientMode;
-    proxy?: ProxyConfig;
-}
-export interface RequestOption {
-    ignoreQuery?: boolean;
-    headers?: OutgoingHttpHeaders;
-}
 const s_cmvRange = 5;
-export class HttpResolver {
+export class HttpResolver implements IHttpClient {
     /** 
      * @param _baseCmv chrome major version refered when construct a user agent, and the version will be randomized between `n` to `n-4`.
      * @param _l custom logger. default is `console`.
@@ -37,16 +29,6 @@ export class HttpResolver {
     newContext(op?: ClientOption): HttpResolverContext {
         return new HttpResolverContext(this.fixCmv(), op, this._l);
     }
-    /**
-     * request GET to the url with new context.
-     * @param url target url.
-     * @param op.headers http headers.
-     * @param op.mode {@link s_clientMode} that is imitated. default is random between chrome or firefox.
-     * @param op.proxy proxy configuration.
-     * @param op.ignoreQuery if true, query part in the `url` is ignored.
-     * @param op.redirectAsNewRequest handle redirect as new request. this may be efficient when using proxy which is implemented reverse proxy.
-     * @returns string encoded by utf-8 as response payload.
-     */
     async get(url: string, op?: RequestOption & ClientOption & { redirectAsNewRequest?: boolean }): Promise<any> {
         let redirectCount = op?.redirectAsNewRequest && -1;
         const bindOp = () => {
@@ -61,16 +43,6 @@ export class HttpResolver {
             else return await this.newContext(op).get(e.message, bindOp());
         }
     }
-    /**
-     * request POST to the url with new context.
-     * @param url target url.
-     * @param payload request payload. if this is an object, it is treated as json.
-     * @param op.headers http headers.
-     * @param op.mode {@link s_clientMode} that is imitated. default is random between chrome or firefox.
-     * @param op.proxy proxy configuration.
-     * @param op.ignoreQuery if true, query part in the `url` is ignored.
-     * @returns string encoded by utf-8 as response payload.
-     */
     async post(url: string, payload: any, op?: RequestOption & ClientOption): Promise<any> {
         return await this.newContext(op).post(url, payload, op);
     }
