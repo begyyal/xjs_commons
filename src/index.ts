@@ -1,5 +1,7 @@
 
 export * from "./const/types";
+export * from "./const/gender";
+export * from "./const/http-method";
 
 export * from "./func/u";
 export * from "./func/u-obj";
@@ -13,5 +15,5 @@ export { DValidate } from "./func/decorator/d-validate";
 
 export * from "./obj/xjs-err";
 
-export * from "./prcs/http-resolver";
-
+export { HttpResolver } from "./prcs/http/http-resolver";
+export { s_clientMode } from "./prcs/http/http-resolver-context";

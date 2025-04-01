@@ -9,9 +9,7 @@ This module is very simple, therefore it has no dependencies.
 # Code example (only part)
  - Miscellaneous utilities.
 ```ts
-import { checkPortAvailability, delay, int2array } from "../func/u";
-import { UFile } from "../func/u-file";
-import { UHttp } from "../func/u-http";
+import { checkPortAvailability, delay, int2array, UFile, UHttp } from "xjs-common";
 
 (async () => {
     // await 3 seconds.
@@ -42,7 +40,7 @@ import { UHttp } from "../func/u-http";
 ```
  - Array utilities.
 ```ts
-import { UArray } from "../func/u-array";
+import { UArray } from "xjs-common";
 
 (() => {
     // [ 1, 3, 2, 5, 4 ]
@@ -63,11 +61,15 @@ import { UArray } from "../func/u-array";
     const ary3 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     // [ [ 1, 2, 3 ], [ 4, 5, 6 ], [ 7, 8, 9 ], [ 10 ] ]
     console.log(UArray.chop(ary3, 3));
+
+    // randomization.
+    console.log(UArray.shuffle(ary3));
+    console.log(UArray.randomPick(ary3));
 })();
 ```
  - String utilities.
 ```ts
-import { UString } from "../func/u-string";
+import { UString } from "xjs-common";
 
 (() => {
     // true
@@ -90,11 +92,38 @@ import { UString } from "../func/u-string";
     console.log(UString.simpleDate2day(new Date()));
 })();
 ```
+ - Http client enhanced for web scraping.
+```ts
+import { HttpResolver, s_clientMode } from "xjs-common";
+
+(async () => {
+    const chromeMajorVersion = 134;
+    // can customize logging. (default is console.)
+    // const http = new HttpResolver(chromeMajorVersion, logger);
+    const http = new HttpResolver(chromeMajorVersion);
+
+    // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
+    let body = await http.get("https://begyyal.net", { mode: s_clientMode.chrome });
+
+    // use proxy by passing the configuration.
+    const proxy = { server: "proxy.sample.com", port: 8080, auth: { name: "prx", pass: "****" } }
+    body = await http.post("https://begyyal.net", { proxy });
+
+    // implicitly corresponds to cookies and redirect, and do randomization.
+    body = await http.get("https://begyyal.net");
+
+    // if you want to keep some states of requests (and suppress to randomize), it can create new context to do.
+    const context = http.newContext();
+    body = await context.get("https://begyyal.net/1");
+    // this request sends with cookies that is set by precedent requests. 
+    // in POST, payload is treated as json if it is an object.
+    body = await context.post("https://begyyal.net/2", { a: "b" });
+})();
+```
  - Mark method as transaction.  
 **NOTE**: this feature uses decorator, so requires `"experimentalDecorators": true` in tsconfig.
 ```ts
-import { transaction } from "../func/decorator/transaction";
-import { delay } from "../func/u";
+import { transaction, delay } from "xjs-common";
 
 class Cls {
     constructor() { }
@@ -119,9 +148,7 @@ class Cls {
  - Validate class fields.  
 **NOTE**: this feature uses decorator, so requires `"experimentalDecorators": true` in tsconfig.
 ```ts
-import { Type } from "../const/types";
-import { DValidate } from "../func/decorator/d-validate";
-import { UType } from "../func/u-type";
+import { Type, DValidate, UType } from "xjs-common";
 
 class Cls_A {
     @DValidate.required
@@ -168,30 +195,6 @@ class Cls_B {
     console.log(UType.validate(Object.assign(new Cls_A(), invalid6))); // false
 })();
 ```
- - Http client.
-```ts
-import { HttpResolver, s_clientMode } from "../prcs/http-resolver";
-
-(async () => {
-    const chromeMajorVersion = 131;
-
-    // can customize logging. (default is console.)
-    // const http = new HttpResolver(chromeMajorVersion, logger);
-    const http = new HttpResolver(chromeMajorVersion);
-
-    // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
-    let body = await http.get("https://begyyal.net", { mode: s_clientMode.firefox });
-
-    // use proxy by passing the configuration.
-    const proxy = { server: "proxy.sample.com", port: 8080, auth: { name: "prx", pass: "****" } }
-    body = await http.get("https://begyyal.net", { proxy });
-
-    // implicitly corresponds to cookies and redirect.
-    body = await http.get("https://begyyal.net");
-    console.log(body);
-})();
-```
-
 ## Error definition
 XJS throws error with `code` property which has one of the following numbers.
 |code|thrown by|
@@ -200,4 +203,4 @@ XJS throws error with `code` property which has one of the following numbers.
 |20|`func/u-string`|
 |30|`func/u-type` (include `func/decorator/d-validate`) |
 |100|`func/decorator/transaction`|
-|200|`prcs/http-resolver`|
+|200|`prcs/http/http-resolver`|
