@@ -1,12 +1,12 @@
-import { Type } from "../const/types";
 import { XjsErr } from "../obj/xjs-err";
 import { int2array } from "./u";
+import { UType } from "./u-type";
 
 const s_errCode = 20;
 
 export namespace UString {
     export function eq(s1: string, s2: string): boolean {
-        return typeof s1 !== Type.string || typeof s2 !== Type.string ? s1 === s2 : s1.trim() === s2.trim();
+        return !UType.isString(s1) || !UType.isString(s2) ? s1 === s2 : s1.trim() === s2.trim();
     }
     export function simpleDate2sec(date?: Date): string {
         return (date ?? new Date()).toISOString().split(".")[0].replace(/[-T:]/g, "");

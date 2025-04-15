@@ -8,9 +8,9 @@ import { XjsErr } from "../../obj/xjs-err";
 import { UHttp } from "../../func/u-http";
 import { UArray } from "../../func/u-array";
 import { HttpMethod } from "../../const/http-method";
-import { Type } from "../../const/types";
 import { ClientMode, ProxyConfig } from "./http-resolver";
 import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
+import { UType } from "../../func/u-type";
 
 interface RequestContext extends RequestOption {
     redirectCount: number;
@@ -141,7 +141,7 @@ export class HttpResolverContext implements IHttpClient {
         params.method = HttpMethod.Post;
         params.headers = rc.headers ?? {};
         let p = payload;
-        if (typeof payload === Type.object) {
+        if (UType.isObject(payload)) {
             p = JSON.stringify(payload);
             params.headers["Content-Length"] = (p as string).length;
             params.headers["Content-Type"] = "application/json";

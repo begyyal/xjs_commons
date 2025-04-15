@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { UType } from "./u-type";
 
 export namespace UFile {
     export function mkdir(p: string | string[]): boolean {
@@ -31,6 +32,6 @@ export namespace UFile {
         }
     }
     function join(p: string | string[]): string {
-        return typeof p === "string" ? p : path.join(...p);
+        return UType.isString(p) ? p : path.join(...p);
     }
 }
