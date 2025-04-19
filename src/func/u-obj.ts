@@ -6,8 +6,8 @@ export namespace UObj {
         for (const k of keys) if (UType.isDefined(s[k])) t[k] = s[k];
         return t;
     }
-    export function crop<T extends NormalRecord>(o: T, ...keys: (keyof T)[]): Partial<T> {
-        Object.keys(o).filter(k => !keys.includes(k)).forEach(k => delete o[k]);
+    export function crop<T extends NormalRecord>(o: T, keys: (keyof T)[], exclusive?: boolean): Partial<T> {
+        Object.keys(o).filter(k => !!exclusive === keys.includes(k)).forEach(k => delete o[k]);
         return o;
     }
 }
