@@ -1,19 +1,23 @@
 import { Type } from "../../const/types";
 import { XjsErr } from "../../obj/xjs-err";
 import { UType } from "../u-type";
+import { UObj } from "../u-obj";
 
 const s_errCode = 30;
 
 export const smbl_tm = Symbol("typeMap");
 export interface TypeDesc {
-    t?: Type,
-    req?: boolean,
-    ary?: TypeDesc,
-    rec?: boolean
+    t?: Type;
+    req?: boolean;
+    ary?: TypeDesc;
+    rec?: boolean;
 }
 export interface TypeMap { [k: string]: TypeDesc }
-/** decorators to be validated by {@link UType.validate} */
-export namespace DValidate {
+/** 
+ * decorators to be validated by {@link UType.validate},
+ * and to be cropped by {@link UObj.crop}.
+ */
+export namespace DType {
     export function string(target: Object, propKey: string): void {
         setTypeDesc(target, propKey, Type.string);
     }

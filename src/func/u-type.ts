@@ -1,5 +1,5 @@
 import { Type } from "../const/types";
-import { smbl_tm, TypeMap, DValidate, TypeDesc } from "./decorator/d-validate";
+import { smbl_tm, TypeMap, DType, TypeDesc } from "./decorator/d-type";
 
 export namespace UType {
     export function isDefined(v: any): boolean {
@@ -14,7 +14,7 @@ export namespace UType {
     export function isBoolean(v: any): v is boolean { return typeof v === Type.boolean; }
     export function isSymbol(v: any): v is symbol { return typeof v === Type.symbol; }
     export function isObject(v: any): v is object { return typeof v === Type.object; }
-    /** validate properties which attached decorators in {@link DValidate} */
+    /** validate properties which attached decorators in {@link DType} */
     export function validate(o: any): boolean {
         return !o[smbl_tm] || Object.entries(o[smbl_tm] as TypeMap)
             .every(e => validateProp(o[e[0]], e[1]));
