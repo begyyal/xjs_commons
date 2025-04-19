@@ -145,38 +145,45 @@ class Cls {
     console.log(e);
 });
 ```
- - Validate class fields.  
+ - Validate and crop class fields.  
 **NOTE**: this feature uses decorator, so requires `"experimentalDecorators": true` in tsconfig.
 ```ts
-import { Type, DValidate, UType } from "xjs-common";
+import { Type, DType, UType, UObj } from "xjs-common";
 
 class Cls_A {
-    @DValidate.required
-    @DValidate.number
+    @DType.required
+    @DType.number
     id: number;
-    @DValidate.string
+    @DType.string
     strA: string;
-    @DValidate.recursive
+    @DType.recursive
     objA: Cls_B;
+    p: number;
     constructor() { }
 }
 class Cls_B {
-    @DValidate.array({ t: Type.number })
+    @DType.array({ t: Type.number })
     aryB: number[];
-    @DValidate.boolean
+    @DType.boolean
     boolB: boolean;
+    q: number;
     constructor() { }
 }
 (() => {
-    // ===> below are valid cases.
-    const valid_b1 = Object.assign(new Cls_B(), { aryB: [1, 2, 3], boolB: true });
-    const valid1 = { id: 0, strA: "a", objA: valid_b1 };
-    console.log(UType.validate(Object.assign(new Cls_A(), valid1))); // true
+    const valid_b1 = Object.assign(new Cls_B(), { aryB: [1, 2, 3], boolB: true, q: 1 });
+    const valid1 = Object.assign(new Cls_A(), { id: 1, strA: "a", objA: valid_b1, p: 1 });
+
+    // remove non decorated fields.
+    const cropped = UObj.crop(valid1);
+    console.log(!!cropped.id && !cropped.p && !!cropped.objA.aryB && !cropped.objA.q) // true;
+
+    // validation. below are valid cases.
+    console.log(UType.validate(valid1)); // true
 
     const valid2 = { id: 0 };
     console.log(UType.validate(Object.assign(new Cls_A(), valid2))); // true
 
-    // ===> below are invalid cases.
+    // validation. below are invalid cases.
     const invalid1 = {};
     console.log(UType.validate(Object.assign(new Cls_A(), invalid1))); // false
 
