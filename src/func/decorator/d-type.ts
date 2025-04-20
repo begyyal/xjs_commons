@@ -42,6 +42,9 @@ export namespace DType {
     export function recursive(target: Object, propKey: string): void {
         setDesc(target, propKey, (td) => td.rec = true);
     }
+    export function keep(target: Object, propKey: string): void {
+        setDesc(target, propKey, (_) => { });
+    }
     function setDesc(target: Object, propKey: string, setter: (td: TypeDesc) => void): void {
         const map: TypeMap = target[smbl_tm] ?? {};
         map[propKey] ??= { t: null, req: false, rec: false, ary: null };

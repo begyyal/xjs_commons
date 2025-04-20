@@ -146,7 +146,9 @@ class Cls {
 });
 ```
  - Validate and crop class fields.  
-**NOTE**: this feature uses decorator, so requires `"experimentalDecorators": true` in tsconfig.
+**NOTE**: this feature uses decorator, so requires `"experimentalDecorators": true` in tsconfig.  
+**NOTE**: some functionalities  in this feature are based on `"useDefineForClassFields": true` in tsconfig.  
+this flag is true by default at the target higher than `ES2022`, [here is for more](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields).
 ```ts
 import { Type, DType, UType, UObj } from "xjs-common";
 
@@ -208,6 +210,6 @@ XJS throws error with `code` property which has one of the following numbers.
 |:---|:---|
 |10|`func/u`|
 |20|`func/u-string`|
-|30|`func/u-type` (include `func/decorator/d-validate`) |
+|30|`func/u-type` (include `func/decorator/d-type`) |
 |100|`func/decorator/transaction`|
 |200|`prcs/http/http-resolver`|
