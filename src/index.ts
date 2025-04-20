@@ -11,7 +11,7 @@ export * from "./func/u-file"
 export * from "./func/u-http";
 export * from "./func/u-type";
 export * from "./func/decorator/transaction";
-export { DType as DValidate } from "./func/decorator/d-type";
+export { DType } from "./func/decorator/d-type";
 
 export * from "./obj/xjs-err";
 

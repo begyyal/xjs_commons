@@ -1,6 +1,6 @@
 {
   "name": "xjs-common",
-  "version": "6.0.2",
+  "version": "6.0.4",
   "description": "library modules for nodejs that bundled general-purpose implementations.",
   "repository": {
     "type": "git",
@@ -21,7 +21,6 @@
   ],
   "main": "./dist/index",
   "types": "./dist/index.d.ts",
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.3.1",
     "ts-node": "^10.9.1",
