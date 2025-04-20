@@ -3,8 +3,19 @@ import { DType, smbl_tm, TypeMap } from "./decorator/d-type";
 import { UType } from "./u-type";
 
 export namespace UObj {
-    export function assignProperties<T extends NormalRecord, S extends NormalRecord>(t: T, s: S, ...keys: (keyof S)[]): T & Partial<S> {
-        for (const k of keys) if (UType.isDefined(s[k])) t[k] = s[k];
+    /**
+     * assign properties to the object with specified property keys.
+     * @param t target object.
+     * @param s source object.
+     * @param keys property keys which are copied from source object. if omit this, all keys in source object is applied.
+     * @param keepDtypeClass if true, class which has properties decorated with {@link DType} in target object is kept and that is assigned properties recursively.
+     */
+    export function assignProperties<T extends NormalRecord, S extends NormalRecord>(
+        t: T, s: S, keys?: (keyof S)[], keepDtypeClass?: boolean): T & Partial<S> {
+        for (const k of keys ?? Object.keys(s)) if (UType.isDefined(s[k]))
+            if (keepDtypeClass && UType.isObject(t[k]) && UType.isObject(s[k]) && t[k]?.[smbl_tm])
+                assignProperties(t[k], s[k], null, true);
+            else t[k] = s[k];
         return t;
     }
     /**

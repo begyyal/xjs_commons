@@ -1,12 +1,20 @@
 import { UObj } from "../func/u-obj";
+import { UType } from "../func/u-type";
 import { genCLS_A, genIF_A, genIF_B } from "./func/u";
 
-function test1(): void {
+function test_assignProperties(): void {
     const a = genIF_A(1)[0];
     const b = genIF_B(1)[0];
-    const assigned = UObj.assignProperties(a, b, "b", "d");
-    if (!assigned.d || !assigned.a) throw Error("[UObj.assignProperties] test1 - was not assigned.");
-    if (assigned.b != "bbb_b") throw Error("[UObj.assignProperties] test1 - was not overriden.");
+    const assigned = UObj.assignProperties(a, b, ["b", "d"]);
+    if (!assigned.d || !assigned.a) throw Error("[UObj.assignProperties] was not assigned.");
+    if (assigned.b != "bbb_b") throw Error("[UObj.assignProperties] was not overriden.");
+    const assign4keepOption = (keep: boolean) => {
+        const ca = genCLS_A(1)[0];
+        const b = { id: 1, a: 2, b: "3", c: { id: 11, d: [1], e: "bad" } };
+        return UObj.assignProperties(ca, b, null, keep);
+    };
+    if (!UType.validate(assign4keepOption(false)) || UType.validate(assign4keepOption(true)))
+        throw Error("[UObj.assignProperties] maybe source object was not assigned correctly with keeping d-type class.");
 }
 function test_crop(): void {
     let a = genCLS_A(1)[0];
@@ -30,7 +38,7 @@ function test_crop(): void {
 }
 
 export function T_UObj(): void {
-    test1();
+    test_assignProperties();
     test_crop();
     console.log("tests in T_UObj completed.");
 }
