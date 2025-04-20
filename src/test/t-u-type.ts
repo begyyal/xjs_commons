@@ -1,3 +1,4 @@
+import { Type } from "../const/types";
 import { UType } from "../func/u-type";
 import { CLS_A, CLS_B } from "./obj/class-common";
 
@@ -36,10 +37,17 @@ function test2(): void {
     Object.assign(a, { c: b });
     if (!UType.validate(a)) throw Error("[UType.validate] test2 - something went wrong.");
 }
-
+function test_isArray(): void {
+    const a = [1, 2, "3"];
+    if (!UType.isArray(a)) throw Error("[UType.isArray] not working.");
+    if (UType.isArray(a, Type.number)) throw Error("[UType.isArray] type check is not working.");
+    a.pop();
+    if (!UType.isArray(a, Type.number)) throw Error("[UType.isArray] type check is not working.");
+}
 
 export function T_UType(): void {
     test1();
     test2();
+    test_isArray();
     console.log("tests in T_UType completed.");
 }

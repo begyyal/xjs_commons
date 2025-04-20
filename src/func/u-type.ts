@@ -14,6 +14,16 @@ export namespace UType {
     export function isBoolean(v: any): v is boolean { return typeof v === Type.boolean; }
     export function isSymbol(v: any): v is symbol { return typeof v === Type.symbol; }
     export function isObject(v: any): v is object { return typeof v === Type.object; }
+    export function isArray(v: any, t: Type.string): v is string[];
+    export function isArray(v: any, t: Type.number): v is number[];
+    export function isArray(v: any, t: Type.bigint): v is bigint[];
+    export function isArray(v: any, t: Type.boolean): v is boolean[];
+    export function isArray(v: any, t: Type.symbol): v is symbol[];
+    export function isArray(v: any, t: Type.object): v is object[];
+    export function isArray(v: any): v is any[];
+    export function isArray(v: any, t?: Type): v is any[] {
+        return Array.isArray(v) && (!t || v.every(e => typeof e === t));
+    }
     /** validate properties which attached decorators in {@link DType} */
     export function validate(o: any): boolean {
         return !o[smbl_tm] || Object.entries(o[smbl_tm] as TypeMap)
