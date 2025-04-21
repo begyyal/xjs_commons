@@ -13,9 +13,9 @@ export namespace UObj {
     export function assignProperties<T extends NormalRecord, S extends NormalRecord>(
         t: T, s: S, keys?: (keyof S)[], keepDtypeClass?: boolean): T & Partial<S> {
         for (const k of keys ?? Object.keys(s)) if (UType.isDefined(s[k]))
-            if (keepDtypeClass && UType.isObject(t[k]) && UType.isObject(s[k]) && t[k]?.[smbl_tm])
+            if (keepDtypeClass && UType.isObject(t[k]) && UType.isObject(s[k]) && t[k]?.[smbl_tm]) {
                 assignProperties(t[k], s[k], null, true);
-            else t[k] = s[k];
+            } else t[k] = s[k];
         return t;
     }
     /**
@@ -32,8 +32,5 @@ export namespace UObj {
             return !!exclusive === _keys.includes(k);
         }).forEach(k => delete o[k]);
         return o;
-    }
-    export function clone<T extends NormalRecord>(o: T): T {
-        return JSON.parse(JSON.stringify(o));
     }
 }

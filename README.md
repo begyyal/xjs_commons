@@ -1,6 +1,8 @@
 [![CI](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml/badge.svg)](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml)
 
-Available to `npm i xjs-common`.
+~~Available to `npm i xjs-common`.~~  
+**NOTE**: Publishing `v7.0.0` is in preparation currently...  
+**NOTE**: The versions <= `v6.2.0` was unpublished. If you has been used these version, please update to the versions >= `v7.0.0`.
 
 # Overview
 Library modules for nodejs that bundled general-purpose implementations.  
