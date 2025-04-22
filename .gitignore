@@ -1,8 +1,9 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
 /node_modules
-/src/test2
-common-*.tgz
+!/src/test
+/src/test*
+xjs-common-*.tgz
 
 # Compiled output
 /dist

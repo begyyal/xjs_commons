@@ -5,7 +5,7 @@ import { UObj } from "../u-obj";
 
 const s_errCode = 30;
 
-export const smbl_tm = Symbol("typeMap");
+export const smbl_tm = Symbol.for("xjs:typeMap");
 export interface TypeDesc {
     t?: Type;
     req?: boolean;
