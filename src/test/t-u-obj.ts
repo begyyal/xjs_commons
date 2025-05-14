@@ -25,13 +25,13 @@ function test_crop(): void {
     }
     a = genCLS_A(1)[0];
     cropped = UObj.crop(a, ["a", "b"], true);
-    if (Object.keys(cropped).length !== 3 || cropped.a || cropped.b) {
+    if (Object.keys(cropped).length !== 4 || cropped.a || cropped.b) {
         console.error(JSON.stringify(cropped));
         throw Error("[UObj.crop] was not cropped with exclusive mode correctly.");
     }
     a = genCLS_A(1)[0];
     cropped = UObj.crop(a);
-    if (Object.keys(cropped).length !== 4 || cropped.p || cropped.c.q) {
+    if (Object.keys(cropped).length !== 5 || cropped.p || cropped.c.q) {
         console.error(JSON.stringify(cropped));
         throw Error("[UObj.crop] was not cropped by d-type decorators correctly.");
     }

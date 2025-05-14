@@ -47,6 +47,9 @@ function test_validate(): void {
     Object.assign(a, { c: b });
     if (UType.validate(a).length !== 0)
         throw Error("[UType.validate] something went wrong.");
+    Object.assign(a, { x: "a" });
+    if (!UArray.eq(UType.validate(a), ["x"]))
+        throw Error("[UType.validate] decorator in super class was ignored.");
 }
 function test_isArray(): void {
     const a = [1, 2, "3"];

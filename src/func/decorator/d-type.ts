@@ -46,7 +46,7 @@ export namespace DType {
         setDesc(target, propKey, (_) => { });
     }
     function setDesc(target: Object, propKey: string, setter: (td: TypeDesc) => void): void {
-        const map: TypeMap = target[smbl_tm] ?? {};
+        const map: TypeMap = target[smbl_tm] ? Object.assign({}, target[smbl_tm]) : {};
         map[propKey] ??= { t: null, req: false, rec: false, ary: null };
         const td = map[propKey];
         setter(td);
@@ -55,6 +55,6 @@ export namespace DType {
         if (td.t && td.ary) { ex1 = "type"; ex2 = "array"; }
         if (td.ary && td.rec) { ex1 = "array"; ex2 = "recursive flag"; }
         if (ex1 && ex2) throw new XjsErr(s_errCode, `decorator to express ${ex1} and ${ex2} are exclusive.`);
-        Object.defineProperty(target, smbl_tm, { value: map });
+        Object.defineProperty(target, smbl_tm, { value: map, configurable: true });
     }
 }

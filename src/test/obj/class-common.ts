@@ -1,7 +1,12 @@
 import { Type } from "../../const/types";
 import { DType } from "../../func/decorator/d-type";
 
-export class CLS_A {
+export abstract class CLS_Base {
+    @DType.number
+    x: number;
+    constructor() { }
+}
+export class CLS_A extends CLS_Base {
     @DType.required
     @DType.number
     id: number;
@@ -18,6 +23,7 @@ export class CLS_A {
         b?: string,
         c?: CLS_B,
         p?: any) {
+        super();
         this.id = id;
         this.a = a;
         this.b = b;
@@ -25,8 +31,7 @@ export class CLS_A {
         this.p = p;
     }
 }
-
-export class CLS_B {
+export class CLS_B extends CLS_Base {
     @DType.required
     @DType.number
     id: number;
@@ -43,6 +48,7 @@ export class CLS_B {
         e?: boolean,
         q?: any
     ) {
+        super();
         this.id = id;
         this.d = d;
         this.e = e;
