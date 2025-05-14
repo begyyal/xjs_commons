@@ -13,7 +13,7 @@ function test_assignProperties(): void {
         const b = { id: 1, a: 2, b: "3", c: { id: 11, d: [1], e: "bad" } };
         return UObj.assignProperties(ca, b, null, keep);
     };
-    if (!UType.validate(assign4keepOption(false)) || UType.validate(assign4keepOption(true)))
+    if (UType.validate(assign4keepOption(false)).length !== 0 || UType.validate(assign4keepOption(true)).length === 0)
         throw Error("[UObj.assignProperties] maybe source object was not assigned correctly with keeping d-type class.");
 }
 function test_crop(): void {

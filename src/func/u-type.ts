@@ -24,17 +24,21 @@ export namespace UType {
     export function isArray(v: any, t?: Type): v is any[] {
         return Array.isArray(v) && (!t || v.every(e => typeof e === t));
     }
-    /** validate properties which attached decorators in {@link DType} */
-    export function validate(o: any): boolean {
-        return !o[smbl_tm] || Object.entries(o[smbl_tm] as TypeMap)
-            .every(e => validateProp(o[e[0]], e[1]));
+    /** 
+     * validate properties which attached decorators in {@link DType}.
+     * @param o object to be validated.
+     * @returns invalid property keys. returns an empty array if `o` is valid.
+     */
+    export function validate(o: any): string[] {
+        if (!o[smbl_tm]) return [];
+        return Object.entries(o[smbl_tm] as TypeMap).flatMap(e => validateProp(e[0], o[e[0]], e[1]));
     }
-    function validateProp(prop: any, td: TypeDesc): boolean {
-        if (isEmpty(prop)) return !td.req;
-        if (td.t && typeof prop !== td.t) return false;
-        if (td.ary) return Array.isArray(prop) && (!td.ary || prop.every(e => validateProp(e, td.ary)));
-        if (td.rec) return validate(prop);
-        return true;
+    function validateProp(k: string, prop: any, td: TypeDesc): string[] {
+        if (isEmpty(prop)) return td.req ? [k] : [];
+        if (td.t && typeof prop !== td.t) return [k];
+        if (td.ary) return Array.isArray(prop) ? prop.flatMap(e => validateProp(k, e, td.ary)) : [k];
+        if (td.rec) return validate(prop).flatMap(k2 => `${k}.${k2}`);
+        return [];
     }
     export function takeAsArray<T>(v: T | T[]): T[] {
         return Array.isArray(v) ? v : [v];

@@ -181,28 +181,28 @@ class Cls_B {
     console.log(!!cropped.id && !cropped.p && !!cropped.objA.aryB && !cropped.objA.q) // true;
 
     // validation. below are valid cases.
-    console.log(UType.validate(valid1)); // true
+    console.log(UType.validate(valid1)); // []
 
     const valid2 = { id: 0 };
-    console.log(UType.validate(Object.assign(new Cls_A(), valid2))); // true
+    console.log(UType.validate(Object.assign(new Cls_A(), valid2))); // []
 
     // validation. below are invalid cases.
     const invalid1 = {};
-    console.log(UType.validate(Object.assign(new Cls_A(), invalid1))); // false
+    console.log(UType.validate(Object.assign(new Cls_A(), invalid1))); // [ 'id' ]
 
     const invalid3 = { id: 0, strA: [], objA: valid_b1 };
-    console.log(UType.validate(Object.assign(new Cls_A(), invalid3))); // false
+    console.log(UType.validate(Object.assign(new Cls_A(), invalid3))); // [ 'strA' ]
 
     const invalid4 = { id: "0", strA: "a", objA: valid_b1 };
-    console.log(UType.validate(Object.assign(new Cls_A(), invalid4))); // false
+    console.log(UType.validate(Object.assign(new Cls_A(), invalid4))); // [ 'id' ]
 
     const invalid_b1 = Object.assign(new Cls_B(), { aryB: [1, 2, 3], boolB: 1 });
     const invalid5 = { id: 0, strA: "a", objA: invalid_b1 };
-    console.log(UType.validate(Object.assign(new Cls_A(), invalid5))); // false
+    console.log(UType.validate(Object.assign(new Cls_A(), invalid5))); // [ 'objA.boolB' ]
 
     const invalid_b2 = Object.assign(new Cls_B(), { aryB: ["1"], boolB: true });
     const invalid6 = { id: 0, strA: "a", objA: invalid_b2 };
-    console.log(UType.validate(Object.assign(new Cls_A(), invalid6))); // false
+    console.log(UType.validate(Object.assign(new Cls_A(), invalid6))); // [ 'objA.aryB' ]
 })();
 ```
 ## Error definition
