@@ -1,4 +1,4 @@
-import { Type } from "../const/types";
+import { MaybeArray, Type } from "../const/types";
 import { smbl_tm, TypeMap, DType, TypeDesc } from "./decorator/d-type";
 
 export namespace UType {
@@ -40,7 +40,7 @@ export namespace UType {
         if (td.rec) return validate(prop).flatMap(k2 => `${k}.${k2}`);
         return [];
     }
-    export function takeAsArray<T>(v: T | T[]): T[] {
+    export function takeAsArray<T>(v: MaybeArray<T>): T[] {
         return Array.isArray(v) ? v : [v];
     }
 }
