@@ -1,13 +1,14 @@
 {
   "name": "xjs-common",
-  "version": "8.0.0",
-  "description": "library modules for nodejs that bundled general-purpose implementations.",
+  "version": "8.0.1",
+  "description": "library modules for nodejs + typescript that bundled general-purpose implementations.",
   "repository": {
     "type": "git",
     "url": "https://github.com/begyyal/xjs_commons"
   },
   "keywords": [
     "node",
+    "typescript",
     "utility"
   ],
   "scripts": {

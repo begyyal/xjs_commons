@@ -4,7 +4,7 @@ Available to `npm i xjs-common`.
 **NOTE**: The versions <= `v6.2.0` was unpublished. If you has been used these versions, please update to the version >= `v7.0.0`.
 
 # Overview
-Library modules for nodejs that bundled general-purpose implementations.  
+Library modules for nodejs + typescript that bundled general-purpose implementations.  
 This module is very simple, therefore it has no dependencies.
 
 # Code example (only part)
