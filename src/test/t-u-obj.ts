@@ -35,6 +35,8 @@ function test_crop(): void {
         console.error(JSON.stringify(cropped));
         throw Error("[UObj.crop] was not cropped by d-type decorators correctly.");
     }
+    // check runtime error at the recursive property...
+    a.c = null; UObj.crop(a);
 }
 
 export function T_UObj(): void {

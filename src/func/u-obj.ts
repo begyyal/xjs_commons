@@ -28,7 +28,7 @@ export namespace UObj {
         if (!keys && !o[smbl_tm]) return {};
         const _keys = keys ?? Object.keys(o[smbl_tm]);
         Object.keys(o).filter(k => {
-            if (!keys && (o[smbl_tm] as TypeMap)?.[k]?.rec) crop(o[k]);
+            if (!keys && (o[smbl_tm] as TypeMap)?.[k]?.rec && o[k]) crop(o[k]);
             return !!exclusive === _keys.includes(k);
         }).forEach(k => delete o[k]);
         return o;
