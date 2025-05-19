@@ -1,11 +1,14 @@
 [![CI](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml/badge.svg)](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml)
 
-Available to `npm i xjs-common`.  
-**NOTE**: The versions <= `v6.2.0` was unpublished. If you has been used these versions, please update to the version >= `v7.0.0`.
-
 # Overview
 Library modules for nodejs + typescript that bundled general-purpose implementations.  
 This module is very simple, therefore it has no dependencies.
+
+# Install
+```
+npm i xjs-common
+```
+**NOTE**: The versions <= `v6.2.0` was unpublished. If you has been used these versions, please update to the version >= `v7.0.0`.
 
 # Code example (only part)
  - Miscellaneous utilities.
@@ -205,7 +208,7 @@ class Cls_B {
     console.log(UType.validate(Object.assign(new Cls_A(), invalid6))); // [ 'objA.aryB' ]
 })();
 ```
-## Error definition
+# Error definition
 XJS throws error with `code` property which has one of the following numbers.
 |code|thrown by|
 |:---|:---|
@@ -214,3 +217,6 @@ XJS throws error with `code` property which has one of the following numbers.
 |30|`func/u-type` (include `func/decorator/d-type`) |
 |100|`func/decorator/transaction`|
 |200|`prcs/http/http-resolver`|
+
+# License
+[Apache-License](./LICENSE)
