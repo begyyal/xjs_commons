@@ -2,8 +2,8 @@ import { XjsErr } from "../obj/xjs-err";
 
 const s_errCode = 10;
 
-export function getJSTDate(): Date {
-    return new Date(Date.now() + 9 * 60 * 60 * 1000);
+export function getJSTDate(d?: Date): Date {
+    return new Date((d ? d.getTime() : Date.now()) + 9 * 60 * 60 * 1000);
 }
 export function delay(sec: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, 1000 * sec));
