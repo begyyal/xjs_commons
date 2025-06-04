@@ -1,3 +1,4 @@
+import { Loggable } from "../../const/types";
 import { XjsErr } from "../../obj/xjs-err";
 import { HttpResolverContext } from "./http-resolver-context";
 import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
@@ -19,7 +20,7 @@ export class HttpResolver implements IHttpClient {
      */
     constructor(
         private _baseCmv: number,
-        private _l: { log: (msg: any) => void, warn: (msg: any) => void } = console) { }
+        private _l: Loggable = console) { }
     /**
      * create a http client as new context that keeps some states. (browser type, cookies, ciphers order, etc...)
      * @param op.mode {@link s_clientMode} that is imitated. default is random between chrome or firefox.
