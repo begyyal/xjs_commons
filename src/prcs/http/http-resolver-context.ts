@@ -11,6 +11,7 @@ import { HttpMethod } from "../../const/http-method";
 import { ClientMode, ProxyConfig } from "./http-resolver";
 import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
 import { UType } from "../../func/u-type";
+import { Loggable } from "../../const/types";
 
 interface RequestContext extends RequestOption {
     redirectCount: number;
@@ -69,7 +70,7 @@ export class HttpResolverContext implements IHttpClient {
     constructor(
         private readonly _cmv: number,
         op?: ClientOption,
-        private _l: { log: (msg: any) => void, warn: (msg: any) => void } = console) {
+        private _l: Loggable = console) {
         this._mode = op?.mode ?? UArray.randomPick([s_clientMode.chrome, s_clientMode.firefox]);
         this._ciphers = this.createCiphers(this._mode);
         this._proxyConfig = op?.proxy;

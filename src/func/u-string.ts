@@ -1,3 +1,4 @@
+import { TimeUnit } from "../const/time-unit";
 import { XjsErr } from "../obj/xjs-err";
 import { int2array } from "./u";
 import { UType } from "./u-type";
@@ -8,11 +9,16 @@ export namespace UString {
     export function eq(s1: string, s2: string): boolean {
         return !UType.isString(s1) || !UType.isString(s2) ? s1 === s2 : s1.trim() === s2.trim();
     }
-    export function simpleDate2sec(date?: Date): string {
-        return (date ?? new Date()).toISOString().split(".")[0].replace(/[-T:]/g, "");
-    }
-    export function simpleDate2day(date?: Date): string {
-        return simpleDate2sec(date).substring(0, 8);
+    /**
+     * generate date time number as fixed length (depends on `unit`) string without separator charactor.  
+     * For example, `2025-06-08T10:15:06.366Z` is to be `20250608101506366`.
+     * @param op.date Date object refered by this. default is `new Date()`.
+     * @param op.unit time unit. default is secound.
+     */
+    export function simpleTime(op?: { date?: Date, unit?: TimeUnit }): string {
+        const t = (op?.date ?? new Date()).toISOString().split(".")[0].replace(/[-T:]/g, "");
+        if (op?.unit === TimeUnit.Msec) return t;
+        return t.substring(0, 10 - (6 - (op?.unit ?? TimeUnit.Sec)) * 2);
     }
     export function trimProps(obj: any): void {
         Object.keys(obj)
