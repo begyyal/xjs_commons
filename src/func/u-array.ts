@@ -36,7 +36,10 @@ export namespace UArray {
         if (op?.k)
             return Array.from(array2map(array, e => e[op.k]).values()).map(a => op?.takeLast ? a.pop() : a.shift());
         const a = op?.takeLast ? [...array].reverse() : array;
-        return a.filter((v, i) => a.findIndex(v2 => op?.predicate ? op?.predicate(v, v2) : v == v2) === i);
+        const p = op?.predicate ?? ((v1, v2) => v1 == v2);
+        const result = [a.shift()];
+        a.forEach(v => result.some(v2 => p(v, v2)) ? {} : result.push(v));
+        return result;
     }
     export function chop<T>(array: T[], len: number): T[][] {
         return [...Array(Math.ceil(array.length / len)).keys()]

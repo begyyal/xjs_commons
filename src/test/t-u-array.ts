@@ -24,7 +24,7 @@ function test2(): void {
     rcds = UArray.distinct(rcds, { predicate: (v1, v2) => v1.id === v2.id });
     const t2 = Date.now() - t;
     if (t2 > 3000) throw Error(`[UArray.distinct] test2 - too slow (${t2 / 1000}sec)`);
-    if (rcds.length !== before) throw Error(`[UArray.distinct] test1 - mismatch lengh | ${before} -> ${rcds.length}`);
+    if (rcds.length !== before) throw Error(`[UArray.distinct] test2 - mismatch lengh | ${before} -> ${rcds.length}`);
     if (rcds.find(r => r.id === 0).a !== "z") throw Error("[UArray.distinct] test2 - couldn't take first");
 }
 function test3(): void {

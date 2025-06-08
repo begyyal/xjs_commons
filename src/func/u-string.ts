@@ -18,7 +18,7 @@ export namespace UString {
     export function simpleTime(op?: { date?: Date, unit?: TimeUnit }): string {
         const t = (op?.date ?? new Date()).toISOString().split(".")[0].replace(/[-T:]/g, "");
         if (op?.unit === TimeUnit.Msec) return t;
-        return t.substring(0, 10 - (6 - (op?.unit ?? TimeUnit.Sec)) * 2);
+        return t.substring(0, 14 - (6 - (op?.unit ?? TimeUnit.Sec)) * 2);
     }
     export function trimProps(obj: any): void {
         Object.keys(obj)
