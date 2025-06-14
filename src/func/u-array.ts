@@ -33,9 +33,8 @@ export namespace UArray {
     export function distinct<T>(array: T[],
         op?: { k?: keyof T, predicate?: (v1: T, v2: T) => boolean, takeLast?: boolean }): T[] {
         if (!array || array.length === 0) return [];
-        if (op?.k)
-            return Array.from(array2map(array, e => e[op.k]).values()).map(a => op?.takeLast ? a.pop() : a.shift());
-        const a = op?.takeLast ? [...array].reverse() : array;
+        if (op?.k) return Array.from(array2map(array, e => e[op.k]).values()).map(a => op?.takeLast ? a.pop() : a.shift());
+        const a = op?.takeLast ? [...array].reverse() : [...array];
         const p = op?.predicate ?? ((v1, v2) => v1 == v2);
         const result = [a.shift()];
         a.forEach(v => result.some(v2 => p(v, v2)) ? {} : result.push(v));

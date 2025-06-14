@@ -2,37 +2,46 @@ import * as fs from "fs";
 import * as path from "path";
 import { UType } from "./u-type";
 import { MaybeArray } from "../const/types";
+import { XjsErr } from "../obj/xjs-err";
+
+const s_errCode = 40;
 
 export namespace UFile {
     export function mkdir(p: MaybeArray<string>): boolean {
-        const dirPath = join(p);
+        const dirPath = joinPath(p);
         const e = fs.existsSync(dirPath);
-        if (!e || !fs.statSync(dirPath).isDirectory()) fs.mkdirSync(dirPath, { recursive: true });
+        if (!e) fs.mkdirSync(dirPath, { recursive: true });
+        else if (!fs.statSync(dirPath).isDirectory())
+            throw new XjsErr(s_errCode, "Already exists a file (not directory) on the path.");
         return !e;
     }
     export function write(p: MaybeArray<string>, c: string): void {
-        fs.writeFileSync(join(p), c);
+        fs.writeFileSync(joinPath(p), c);
     }
-    export function exists(...p: string[]): boolean {
-        return !!p && fs.existsSync(path.join(...p));
+    export function rm(p: MaybeArray<string>): void {
+        fs.rmSync(joinPath(p), { recursive: true });
+    }
+    export function exists(p: MaybeArray<string>): boolean {
+        return fs.existsSync(joinPath(p));
     }
     export function read(p: MaybeArray<string>): Buffer;
     export function read(p: MaybeArray<string>, encoding: BufferEncoding): string;
     export function read(p: MaybeArray<string>, encoding?: BufferEncoding): Buffer | string {
-        return fs.readFileSync(join(p), encoding);
+        const f = joinPath(p);
+        if (!fs.existsSync(f)) throw new XjsErr(s_errCode, `No file found => ${f}`);
+        return fs.readFileSync(f, encoding);
     }
     export function cp(from: MaybeArray<string>, to: MaybeArray<string>): void {
-        const f = join(from), t = join(to);
-        if (fs.existsSync(f)) fs.writeFileSync(t, fs.readFileSync(f));
+        const f = joinPath(from), t = joinPath(to);
+        if (!fs.existsSync(f)) throw new XjsErr(s_errCode, `No file found => ${f}`);
+        fs.copyFileSync(f, t);
     }
     export function mv(from: MaybeArray<string>, to: MaybeArray<string>): void {
-        const f = join(from), t = join(to);
-        if (fs.existsSync(f) && fs.statSync(f).isFile()) {
-            fs.writeFileSync(t, fs.readFileSync(f));
-            fs.rmSync(f, { force: true });
-        }
+        const f = joinPath(from), t = joinPath(to);
+        if (!fs.existsSync(f)) throw new XjsErr(s_errCode, `No file found => ${f}`);
+        fs.renameSync(f, t);
     }
-    function join(p: MaybeArray<string>): string {
+    export function joinPath(p: MaybeArray<string>): string {
         return UType.isString(p) ? p : path.join(...p);
     }
 }
