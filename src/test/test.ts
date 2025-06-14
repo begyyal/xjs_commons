@@ -6,7 +6,7 @@ import { T_UString } from "./t-u-string";
 import { T_UType } from "./t-u-type";
 
 (async () => {
-    T_U();
+    await T_U();
     T_UArray();
     T_UObj();
     T_UType();

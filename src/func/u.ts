@@ -1,3 +1,4 @@
+import { Loggable } from "../const/types";
 import { XjsErr } from "../obj/xjs-err";
 
 const s_errCode = 10;
@@ -32,4 +33,17 @@ export function checkPortAvailability(port: number): Promise<boolean> {
             .once('listening', () => { server.close(); resolve(true); })
             .listen(port);
     });
+}
+export function retry<T>(cb: () => T, count?: number, logger?: Loggable): T;
+export function retry<T>(cb: () => Promise<T>, count?: number, logger?: Loggable): Promise<T>;
+export function retry<T>(cb: () => T | Promise<T>, count: number = 2, logger: Loggable = console): T | Promise<T> {
+    const prcs = (c: number) => {
+        if (c < 0) throw new XjsErr(s_errCode, "failure exceeds retryable count.");
+        let ret = null;
+        try { ret = cb(); } catch (e) { logger.warn(e); ret = prcs(c - 1); }
+        if (ret instanceof Promise) {
+            return new Promise(resolve => ret.then(resolve).catch(e => { logger.warn(e); resolve(prcs(c - 1)) }));
+        } else return ret;
+    };
+    return prcs(count);
 }
