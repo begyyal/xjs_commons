@@ -41,7 +41,7 @@ export namespace UFile {
         if (!fs.existsSync(f)) throw new XjsErr(s_errCode, `No file found => ${f}`);
         fs.renameSync(f, t);
     }
-    export function joinPath(p: MaybeArray<string>): string {
-        return UType.isString(p) ? p : path.join(...p);
+    export function joinPath(...p: MaybeArray<string>[]): string {
+        return path.join(...p.flatMap(UType.takeAsArray));
     }
 }

@@ -1,6 +1,10 @@
 import { UFile } from "../func/u-file";
 
-const s_workingDir = UFile.joinPath([__dirname, "tmp"]);
+const s_workingDir = UFile.joinPath(__dirname, "tmp");
+function test_joinPath(): void {
+    if (s_workingDir != UFile.joinPath([__dirname, "tmp"]))
+        throw Error("[UFile.joinPath] couldn't accept arguments properly.");
+}
 function initialize(): void {
     UFile.mkdir(s_workingDir);
     if (!UFile.exists(s_workingDir))
@@ -34,6 +38,7 @@ function test_mv(): void {
 }
 
 export function T_U_File(): void {
+    test_joinPath();
     initialize();
     try {
         test_write();
