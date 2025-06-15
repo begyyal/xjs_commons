@@ -1,4 +1,4 @@
-[![CI](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml/badge.svg)](https://github.com/begyyal/xjs_commons/actions/workflows/test.yml)
+[![npm][npm-badge]][npm-url] [![CI][ci-badge]][ci-url]
 
 # Overview
 Library modules for nodejs + typescript that bundled general-purpose implementations.  
@@ -219,3 +219,8 @@ XJS throws error with `code` property which has one of the following numbers.
 
 # License
 [Apache-License](./LICENSE)
+
+[npm-url]: https://npmjs.org/package/xjs-common
+[npm-badge]: https://badgen.net/npm/v/xjs-common
+[ci-url]: https://github.com/begyyal/xjs_commons/actions/workflows/test.yml
+[ci-badge]: https://github.com/begyyal/xjs_commons/actions/workflows/test.yml/badge.svg
