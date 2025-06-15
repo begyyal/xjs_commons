@@ -34,16 +34,44 @@ export function checkPortAvailability(port: number): Promise<boolean> {
             .listen(port);
     });
 }
-export function retry<T>(cb: () => T, count?: number, logger?: Loggable): T;
-export function retry<T>(cb: () => Promise<T>, count?: number, logger?: Loggable): Promise<T>;
-export function retry<T>(cb: () => T | Promise<T>, count: number = 2, logger: Loggable = console): T | Promise<T> {
+interface RetryOption<T = void | Promise<void>> {
+    count?: number;
+    logger?: Loggable;
+    errorCriterion?: (e: any) => boolean,
+    intervalPredicate?: () => T
+};
+/**
+ * runs callback with customizable retry.
+ * @param cb callback to be retried.
+ * @param op.count number of retries. default is 1.
+ * @param op.logger logger used for exceptions while retrying the process. default is `console` object.
+ * @param op.errorCriterion distinguish whether retry is required form exceptions. default is none. (i.e. allways required.)
+ * @param op.intervalPredicate predicate that runs between callbacks when retrying.
+ */
+export function retry<T>(cb: () => T, op?: RetryOption<void>): T;
+export function retry<T>(cb: () => T, op?: RetryOption<Promise<void>>): Promise<T>;
+export function retry<T>(cb: () => Promise<T>, op?: RetryOption<void>): Promise<T>;
+export function retry<T>(cb: () => Promise<T>, op?: RetryOption<Promise<void>>): Promise<T>;
+export function retry<T>(cb: () => T | Promise<T>, op?: RetryOption): T | Promise<T> {
+    const l = op?.logger ?? console;
+    const initialCount = op?.count ?? 1;
+    const handleError = (e: any) => {
+        if (op?.errorCriterion && !op.errorCriterion(e)) return false;
+        l.warn(e); return true;
+    };
     const prcs = (c: number) => {
         if (c < 0) throw new XjsErr(s_errCode, "failure exceeds retryable count.");
         let ret = null;
-        try { ret = cb(); } catch (e) { logger.warn(e); ret = prcs(c - 1); }
-        if (ret instanceof Promise) {
-            return new Promise(resolve => ret.then(resolve).catch(e => { logger.warn(e); resolve(prcs(c - 1)) }));
-        } else return ret;
+        const innerPrcs = () => {
+            try { ret = cb(); } catch (e) { if (handleError(e)) ret = prcs(c - 1); else throw e; }
+            if (ret instanceof Promise) {
+                return new Promise((resolve, reject) =>
+                    ret.then(resolve).catch((e: any) => { if (handleError(e)) resolve(prcs(c - 1)); else reject(e); }));
+            } else return ret;
+        };
+        if (c < initialCount && op?.intervalPredicate)
+            ret = op?.intervalPredicate();
+        return ret instanceof Promise ? ret.then(() => innerPrcs()) : innerPrcs();
     };
-    return prcs(count);
+    return prcs(initialCount);
 }

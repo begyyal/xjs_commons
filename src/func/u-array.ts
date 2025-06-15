@@ -7,7 +7,7 @@ export namespace UArray {
      * @param v1 it uses equal operator for comparing elements, so applying object element is not recommended.
      * @param v2 same as v1.
      * @param sort it uses {@link Array#sort} on v1 and v2 if true. default is true.
-     * @param useStrictEqual it uses === operator for compareing elements if true, otherwise using == operator. default is true.
+     * @param useStrictEqual it uses `===` operator for compareing elements if true, otherwise using `==` operator. default is true.
      */
     export function eq(v1: any[], v2: any[], op: { sort?: boolean, useStrictEqual: false }): boolean;
     export function eq<T>(v1: T[], v2: T[], op: { sort?: boolean, useStrictEqual: true }): boolean;

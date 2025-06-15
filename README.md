@@ -13,7 +13,7 @@ npm i xjs-common
 # Code example (only part)
  - Miscellaneous utilities.
 ```ts
-import { checkPortAvailability, delay, int2array, UFile, UHttp } from "xjs-common";
+import { checkPortAvailability, delay, int2array, UFile, UHttp, retry } from "xjs-common";
 
 (async () => {
     // await 3 seconds.
@@ -33,13 +33,12 @@ import { checkPortAvailability, delay, int2array, UFile, UHttp } from "xjs-commo
     // p1=a&p2=1&p2=2
     console.log(UHttp.concatParamsWithEncoding(null, { p1: "a", p2: ["1", "2"] }));
 
+    // runs callback with customizable retry.
+    retry(async () => { }, { count: 2 });
+
     // concatenate file path and make directory if doesn't already exist.
     UFile.mkdir("path/to/dir");
     UFile.mkdir(["path", "to", "dir"]);
-
-    // ignore if f1 is not file or doesn't exist.
-    UFile.mv("path/to/f1", "path/to/f2");
-    UFile.mv(["path", "to", "f1"], ["path", "to", "f2"]);
 })();
 ```
  - Array utilities.
@@ -76,8 +75,6 @@ import { UArray } from "xjs-common";
 import { UString } from "xjs-common";
 
 (() => {
-    // true
-    console.log(UString.eq("", "   "));
     // false
     console.log(UString.eq("", null));
     // true
@@ -91,9 +88,10 @@ import { UString } from "xjs-common";
     // AA
     console.log(UString.idx2az(26));
 
-    // e.g. 20250310
-    console.log(UString.simpleDate2day());
-    console.log(UString.simpleDate2day(new Date()));
+    // e.g. 20250615053513
+    console.log(UString.simpleTime());
+    // e.g. 20250615
+    console.log(UString.simpleTime({ date: getJSTDate(), unit: TimeUnit.Day }));
 })();
 ```
  - Http client enhanced for web scraping.
