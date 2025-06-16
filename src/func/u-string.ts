@@ -48,4 +48,22 @@ export namespace UString {
         return az.toLowerCase().split("").map(c => c.charCodeAt(0) - 97).reverse()
             .map((idx, i) => (idx + 1) * (26 ** i)).reduce((v1, v2) => v1 + v2) - 1;
     }
+    export function is_yyyy(v: string): boolean {
+        return !!v?.match(/^[1-9]\d{3}$/);
+    }
+    export function is_yyyyMM(v: string): boolean {
+        return !!v?.match(/^[1-9]\d{3}(0[1-9]|1[0-2])$/);
+    }
+    export function is_yyyyMMdd(v: string): boolean {
+        return !!v?.match(/^[1-9]\d{3}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|[3][0-1])$/);
+    }
+    export function is_yyyyMMddhh(v: string): boolean {
+        return !!v?.match(/^[1-9]\d{3}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|[3][0-1])(0[1-9]|1\d|2[0-3])$/);
+    }
+    export function is_yyyyMMddhhmm(v: string): boolean {
+        return !!v?.match(/^[1-9]\d{3}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|[3][0-1])(0[1-9]|1\d|2[0-3])[0-5]\d$/);
+    }
+    export function is_yyyyMMddhhmmss(v: string): boolean {
+        return !!v?.match(/^[1-9]\d{3}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|[3][0-1])(0[1-9]|1\d|2[0-3])[0-5]\d[0-5]\d$/);
+    }
 }

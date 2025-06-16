@@ -34,7 +34,7 @@ export function checkPortAvailability(port: number): Promise<boolean> {
             .listen(port);
     });
 }
-interface RetryOption<T = void | Promise<void>> {
+export interface RetryOption<T = void | Promise<void>> {
     count?: number;
     logger?: Loggable;
     errorCriterion?: (e: any) => boolean,
