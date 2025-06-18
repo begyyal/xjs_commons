@@ -41,6 +41,12 @@ export namespace UFile {
         if (!fs.existsSync(f)) throw new XjsErr(s_errCode, `No file found => ${f}`);
         fs.renameSync(f, t);
     }
+    export function ls(p: MaybeArray<string>): string[] {
+        const dir = joinPath(p)
+        if (!fs.statSync(dir).isDirectory())
+            throw new XjsErr(s_errCode, "Specified path for ls is not directory.");
+        return fs.readdirSync(dir);
+    }
     export function joinPath(...p: MaybeArray<string>[]): string {
         return path.join(...p.flatMap(UType.takeAsArray));
     }
