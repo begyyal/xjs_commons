@@ -36,6 +36,14 @@ function test_mv(): void {
     if (!UFile.exists([s_workingDir, "c.txt"]))
         throw Error("[UFile.mv] the file to be moved remained in the same path.");
 }
+function test_reserveFilePath(): void {
+    let fname = UFile.reserveFilePath(s_workingDir, "d.txt");
+    if (fname != UFile.joinPath(s_workingDir, "d.txt"))
+        throw Error(`[UFile.reserveFilePath] returned fname with a non needed change. => ${fname}`);
+    fname = UFile.reserveFilePath(s_workingDir, "c.txt");
+    if (fname != UFile.joinPath(s_workingDir, "c.txt.1"))
+        throw Error(`[UFile.reserveFilePath] fname was not incremented properly. => ${fname}`);
+}
 
 export function T_U_File(): void {
     test_joinPath();
@@ -45,6 +53,7 @@ export function T_U_File(): void {
         test_read();
         test_cp();
         test_mv();
+        test_reserveFilePath();
     } finally {
         finalize();
     }

@@ -99,10 +99,9 @@ import { UString } from "xjs-common";
 import { HttpResolver, s_clientMode } from "xjs-common";
 
 (async () => {
-    const chromeMajorVersion = 134;
     // can customize logging. (default is console.)
     // const http = new HttpResolver(chromeMajorVersion, logger);
-    const http = new HttpResolver(chromeMajorVersion);
+    const http = new HttpResolver();
 
     // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
     let body = await http.get("https://begyyal.net", { mode: s_clientMode.chrome });
@@ -113,6 +112,9 @@ import { HttpResolver, s_clientMode } from "xjs-common";
 
     // implicitly corresponds to cookies and redirect, and do randomization.
     body = await http.get("https://begyyal.net");
+
+    // download a file when [Content-Disposition: attachment] exists in the response.
+    await http.get("https://begyyal.net/a.txt", { downloadPath: "/path/to/store" });
 
     // if you want to keep some states of requests (and suppress to randomize), it can create new context to do.
     const context = http.newContext();

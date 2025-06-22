@@ -1,5 +1,6 @@
 import * as tls from "tls";
 import * as zlib from "zlib";
+import * as fs from "fs";
 import { URL } from "url";
 import { Agent, request as requestTls, RequestOptions } from "https";
 import { request, IncomingMessage, OutgoingHttpHeaders } from "http";
@@ -12,6 +13,8 @@ import { ClientMode, ProxyConfig } from "./http-resolver";
 import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
 import { UType } from "../../func/u-type";
 import { Loggable } from "../../const/types";
+import { UFile } from "../../func/u-file";
+import { UString } from "../../func/u-string";
 
 interface RequestContext extends RequestOption {
     redirectCount: number;
@@ -81,7 +84,8 @@ export class HttpResolverContext implements IHttpClient {
      * request GET to the url.
      * @param url target url.
      * @param op.headers http headers.
-     * @param op.ignoreQuery if true, query part in the `url` is ignored.
+     * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
+     * @param op.downloadPath {@link RequestOption.downloadPath}
      * @returns string encoded by utf-8 as response payload.
      */
     async get(url: string, op?: RequestOption & { outerRedirectCount?: number }): Promise<any> {
@@ -96,7 +100,8 @@ export class HttpResolverContext implements IHttpClient {
      * @param url target url.
      * @param payload request payload. if this is an object, it is treated as json.
      * @param op.headers http headers.
-     * @param op.ignoreQuery if true, query part in the `url` is ignored.
+     * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
+     * @param op.downloadPath {@link RequestOption.downloadPath}
      * @returns string encoded by utf-8 as response payload.
      */
     async post(url: string, payload: any, op?: RequestOption): Promise<any> {
@@ -162,31 +167,8 @@ export class HttpResolverContext implements IHttpClient {
         }
         if (this._cookies) this.setCookies(params.headers);
         return new Promise<any>((resolve, reject) => {
-            const req = requestTls(params, (res: IncomingMessage) => {
-                if (res.headers["set-cookie"]) this.storeCookies(res.headers["set-cookie"]);
-                const sc = UHttp.statusCategoryOf(res.statusCode);
-                if (sc === 3) {
-                    this.handleRedirect(res, params.host).then(resolve).catch(reject).finally(() => res.destroy());
-                    return;
-                }
-                const bfs: Buffer[] = [];
-                const contentEncofing = res.headers["content-encoding"]?.toLocaleLowerCase();
-                res.on('data', chunk => bfs.push(chunk));
-                res.on('end', () => {
-                    try {
-                        let retBuf = Buffer.concat(bfs);
-                        if (contentEncofing == "gzip")
-                            retBuf = zlib.gunzipSync(retBuf);
-                        else if (contentEncofing == "br")
-                            retBuf = zlib.brotliDecompressSync(retBuf);
-                        const data = retBuf.toString("utf8");
-                        if (sc !== 2) {
-                            if (data.trim()) this.warn(data);
-                            reject(new XjsErr(s_errCode, `Https received a error status ${res.statusCode}`));
-                        } else resolve(data);
-                    } catch (e) { reject(e); }
-                });
-            });
+            const req = requestTls(params,
+                (res: IncomingMessage) => this.processResponse(resolve, reject, rc, params.host, res));
             req.on('error', reject);
             req.on('timeout', () => {
                 req.destroy();
@@ -195,6 +177,71 @@ export class HttpResolverContext implements IHttpClient {
             if (payload) req.write(payload);
             req.end();
         });
+    }
+    private processResponse(
+        resolve: (v: any) => void,
+        reject: (r?: any) => void,
+        rc: RequestContext,
+        host: string,
+        res: IncomingMessage): void {
+        if (res.headers["set-cookie"]) this.storeCookies(res.headers["set-cookie"]);
+        const sc = UHttp.statusCategoryOf(res.statusCode);
+        if (sc === 3) {
+            this.handleRedirect(res, host).then(resolve).catch(reject).finally(() => res.destroy());
+            return;
+        }
+        if (res.headers["content-disposition"]?.trim().startsWith("attachment")) {
+            try {
+                const dest = this.resolveDownloadPath(rc.downloadPath, res.headers["content-disposition"]);
+                const stream = fs.createWriteStream(dest);
+                res.pipe(stream);
+                stream.on("finish", () => stream.close());
+                resolve({});
+            } catch (e) {
+                this.error(e);
+                reject(new XjsErr(s_errCode, "Failed to download a file."));
+            }
+        }
+        const bfs: Buffer[] = [];
+        const contentEncofing = res.headers["content-encoding"]?.toLocaleLowerCase();
+        res.on('data', chunk => bfs.push(chunk));
+        res.on('end', () => {
+            try {
+                let retBuf = Buffer.concat(bfs);
+                if (contentEncofing == "gzip")
+                    retBuf = zlib.gunzipSync(retBuf);
+                else if (contentEncofing == "br")
+                    retBuf = zlib.brotliDecompressSync(retBuf);
+                const data = retBuf.toString("utf8");
+                if (sc !== 2) {
+                    if (data.trim()) this.warn(data);
+                    reject(new XjsErr(s_errCode, `Https received a error status ${res.statusCode}`));
+                } else resolve(data);
+            } catch (e) { reject(e); }
+        });
+    }
+    private resolveDownloadPath(opPath: string, disposition: string): string {
+        const appendFname = (d: string) => {
+            const fname = disposition.split(";")
+                .find(f => f.trim().startsWith("filename"))
+                ?.replace(/^\s+filename\s+=/, "").trim()
+                ?? UFile.reserveFilePath(d, `xjs-download_${UString.simpleTime()}`);
+            return UFile.joinPath(d, fname);
+        };
+        if (opPath) {
+            const st = UFile.status(opPath);
+            if (!st || st.isFile()) {
+                const pathArray = opPath.split("/");
+                pathArray.pop();
+                if (!UFile.exists(pathArray)) throw new XjsErr(s_errCode, "Directory of the download path was not found.");
+                return opPath;
+            }
+            if (st.isDirectory()) {
+                if (!UFile.exists(opPath)) throw new XjsErr(s_errCode, "Directory of the download path was not found.");
+                return appendFname(opPath);
+            }
+        }
+        return appendFname("./");
     }
     private async handleRedirect(res: IncomingMessage, host: string): Promise<any> {
         const rc = this._als.getStore();
@@ -246,5 +293,8 @@ export class HttpResolverContext implements IHttpClient {
     }
     private warn(msg: string): void {
         this._l.warn(`[http-resolver] ${msg}`);
+    }
+    private error(msg: string): void {
+        this._l.error(`[http-resolver] ${msg}`);
     }
 }

@@ -13,13 +13,14 @@ export interface ProxyConfig {
     auth?: { name: string, pass: string };
 }
 const s_cmvRange = 5;
+const s_defaultCmv = 137;
 export class HttpResolver implements IHttpClient {
     /** 
      * @param _baseCmv chrome major version refered when construct a user agent, and the version will be randomized between `n` to `n-4`.
      * @param _l custom logger. default is `console`.
      */
     constructor(
-        private _baseCmv: number,
+        private _baseCmv: number = s_defaultCmv,
         private _l: Loggable = console) { }
     /**
      * create a http client as new context that keeps some states. (browser type, cookies, ciphers order, etc...)

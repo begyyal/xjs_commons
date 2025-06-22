@@ -1,13 +1,22 @@
 import { OutgoingHttpHeaders } from "http";
 import { ClientMode, ProxyConfig } from "./http-resolver";
+import { s_clientMode } from "./http-resolver-context";
 
 export interface ClientOption {
     mode?: ClientMode;
     proxy?: ProxyConfig;
 }
 export interface RequestOption {
-    ignoreQuery?: boolean;
     headers?: OutgoingHttpHeaders;
+    /**
+     * if true, query part in the `url` is ignored.
+     */
+    ignoreQuery?: boolean;
+    /**
+     * destination directory or file path for download. this is only used when `Content-Disposition` header exists. 
+     * default is current directory of the process with `filename` of the disposition.
+     */
+    downloadPath?: string;
 }
 export interface IHttpClient {
     /**
@@ -16,7 +25,8 @@ export interface IHttpClient {
      * @param op.headers http headers.
      * @param op.mode {@link s_clientMode} that is imitated. default is random between chrome or firefox.
      * @param op.proxy proxy configuration.
-     * @param op.ignoreQuery if true, query part in the `url` is ignored.
+     * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
+     * @param op.downloadPath {@link RequestOption.downloadPath}
      * @param op.redirectAsNewRequest handle redirect as new request. this may be efficient when using proxy which is implemented reverse proxy.
      * @returns string encoded by utf-8 as response payload.
      */
@@ -28,7 +38,8 @@ export interface IHttpClient {
      * @param op.headers http headers.
      * @param op.mode {@link s_clientMode} that is imitated. default is random between chrome or firefox.
      * @param op.proxy proxy configuration.
-     * @param op.ignoreQuery if true, query part in the `url` is ignored.
+     * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
+     * @param op.downloadPath {@link RequestOption.downloadPath}
      * @returns string encoded by utf-8 as response payload.
      */
     post(url: string, payload: any, op?: RequestOption & ClientOption): Promise<any>;
