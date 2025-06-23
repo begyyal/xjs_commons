@@ -1,3 +1,4 @@
+import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 import { UType } from "./u-type";
@@ -35,7 +36,7 @@ export namespace UFile {
         if (fs.existsSync(pt)) fs.rmSync(pt, { recursive: true });
     }
     export function exists(p: MaybeArray<string>): boolean {
-        return fs.existsSync(joinPath(p));
+        return !!p && fs.existsSync(joinPath(p));
     }
     /**
      * return a file status. if the file of the status doesn't exist, this returns `null`.
@@ -83,6 +84,32 @@ export namespace UFile {
         let dest = joinPath(pt, fname), i = 1;
         while (fs.existsSync(dest)) dest = joinPath(pt, `${fname}.${i++}`);
         return dest;
+    }
+    /**
+     * decompress zip file. this depends on os enviroment due to using the os command.
+     * currently this supports only windows (installed `tar` or `unzip` in gnu compiler) and linux systems (installed `unzip`). 
+     * @param zipPath zip file to be unzipped.
+     * @param destDir directory that the decompress files export to.
+     */
+    export function unzip(zipPath: MaybeArray<string>, destDir?: MaybeArray<string>): void {
+        if (!exists(zipPath)) throw new XjsErr(s_errCode, "There is no file on the zip path.");
+        if (!!destDir && !exists(destDir)) throw new XjsErr(s_errCode, "The destination directory is not found.");
+        let cmd = "unzip", options = null, availableCmd = true;
+        if (destDir) options = `-d ${destDir}`;
+        const check = () => { try { execSync(`${cmd} --help`, { stdio: "ignore" }); } catch { availableCmd = false; } };
+        check();
+        if (process.platform === "win32") {
+            if (!availableCmd) {
+                cmd = "tar"; options = "-xf"; availableCmd = true;
+                if (destDir) options = `-C "${destDir}" ${options}`;
+                check();
+            }
+        } else if (process.platform === "linux") {
+        } else throw new XjsErr(s_errCode, "The os running on is not supported for xjs unzip.");
+        if (!availableCmd) throw new XjsErr(s_errCode, `"${cmd}" command is not installed.`);
+        try { execSync([cmd, options, `"${zipPath}"`].filter(e => e).join(" "), { stdio: "ignore" }); } catch (e) {
+            throw new XjsErr(s_errCode, "Something went wrong at unzip.", e);
+        }
     }
     export function joinPath(...p: MaybeArray<string>[]): string {
         return path.join(...p.flatMap(UType.takeAsArray));
