@@ -198,8 +198,11 @@ export class HttpResolverContext implements IHttpClient {
                 stream.on("finish", () => stream.close());
                 resolve({ headers: res.headers });
             } catch (e) {
-                this.error(e);
-                reject(new XjsErr(s_errCode, "Failed to download a file."));
+                if (e instanceof XjsErr) throw e;
+                else {
+                    this.error(e);
+                    reject(new XjsErr(s_errCode, "Failed to download a file."));
+                }
             }
         }
         const bfs: Buffer[] = [];
