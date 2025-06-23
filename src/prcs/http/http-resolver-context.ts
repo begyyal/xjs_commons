@@ -196,8 +196,9 @@ export class HttpResolverContext implements IHttpClient {
                 const dest = this.resolveDownloadPath(rc.downloadPath, res.headers["content-disposition"]);
                 const stream = fs.createWriteStream(dest);
                 res.pipe(stream);
-                stream.on("finish", () => stream.close());
-                resolve({ headers: res.headers });
+                stream.on("finish", () => { stream.close(); resolve({ headers: res.headers }); });
+                stream.on("error", reject);
+                return;
             } catch (e) {
                 if (e instanceof XjsErr) reject(e);
                 else {

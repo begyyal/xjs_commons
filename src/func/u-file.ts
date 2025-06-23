@@ -95,7 +95,7 @@ export namespace UFile {
         if (!exists(zipPath)) throw new XjsErr(s_errCode, "There is no file on the zip path.");
         if (!!destDir && !exists(destDir)) throw new XjsErr(s_errCode, "The destination directory is not found.");
         let cmd = "unzip", options = null, availableCmd = true;
-        if (destDir) options = `-d ${destDir}`;
+        if (destDir) options = `-d "${destDir}"`;
         const check = () => { try { execSync(`${cmd} --help`, { stdio: "ignore" }); } catch { availableCmd = false; } };
         check();
         if (process.platform === "win32") {
