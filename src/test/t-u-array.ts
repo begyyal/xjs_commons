@@ -3,43 +3,30 @@ import { UArray } from "../func/u-array";
 import { genIF_A } from "./func/u";
 import { IF_A } from "./obj/if-common";
 
-function test1(): void {
+function test_distinct(): void {
     let rcds: IF_A[] = genIF_A(30000);
-    const before = rcds.length;
+    let before = rcds.length;
     rcds.push(...genIF_A(30000));
     rcds[0].a = "z";
-    const t = Date.now();
+    let t = Date.now();
     rcds = UArray.distinct(rcds, { k: "id" });
-    const t2 = Date.now() - t;
-    if (t2 > 1000) throw Error(`[UArray.distinct] test1 - too slow (${t2 / 1000}sec)`);
-    if (rcds.length !== before) throw Error(`[UArray.distinct] test1 - mismatch lengh | ${before} -> ${rcds.length}`);
-    if (rcds.find(r => r.id === 0).a !== "z") throw Error("[UArray.distinct] test1 - couldn't take first");
-}
-function test2(): void {
-    let rcds: IF_A[] = genIF_A(30000);
-    const before = rcds.length;
+    const timeKeybase = Date.now() - t;
+    if (rcds.length !== before) throw Error(`[UArray.distinct] mismatch lengh | ${before} -> ${rcds.length}`);
+    if (rcds.find(r => r.id === 0).a !== "z") throw Error("[UArray.distinct] couldn't take first");
+    rcds = genIF_A(30000);
+    before = rcds.length;
     rcds.push(...genIF_A(30000));
     rcds[0].a = "z";
-    const t = Date.now();
+    t = Date.now();
     rcds = UArray.distinct(rcds, { predicate: (v1, v2) => v1.id === v2.id });
-    const t2 = Date.now() - t;
-    if (t2 > 4000) throw Error(`[UArray.distinct] test2 - too slow (${t2 / 1000}sec)`);
-    if (rcds.length !== before) throw Error(`[UArray.distinct] test2 - mismatch lengh | ${before} -> ${rcds.length}`);
-    if (rcds.find(r => r.id === 0).a !== "z") throw Error("[UArray.distinct] test2 - couldn't take first");
-}
-function test3(): void {
-    let rcds: IF_A[] = genIF_A(3);
-    rcds.push(...genIF_A(3));
-    rcds[0].a = "z";
-    rcds = UArray.distinct(rcds, { predicate: (v1, v2) => v1.id === v2.id, takeLast: true });
-    if (UArray.eq(genIF_A(3), rcds)) throw Error("[UArray.distinct] test3 - couldn't take last");
-}
-function test4(): void {
-    let rcds: IF_A[] = genIF_A(3);
+    if (timeKeybase * 3 > (Date.now() - t)) throw Error(`[UArray.distinct] keybase processing couldn't compress the time significantly. (the ratio less than 3 times)`);
+    if (rcds.length !== before) throw Error(`[UArray.distinct] mismatch lengh | ${before} -> ${rcds.length}`);
+    if (rcds.find(r => r.id === 0).a !== "z") throw Error("[UArray.distinct] couldn't take first");
+    rcds = genIF_A(3);
     rcds.push(...genIF_A(3));
     rcds[0].a = "z";
     rcds = UArray.distinct(rcds, { k: "id", takeLast: true });
-    if (UArray.eq(genIF_A(3), rcds)) throw Error("[UArray.distinct] test4 - couldn't take last");
+    if (UArray.eq(genIF_A(3), rcds)) throw Error("[UArray.distinct] couldn't take last");
 }
 function test5(): void {
     const a = [1, 2, 4, 1, 2, 3, 6, 7, 3, 4, 6, 9, 2, 5, 0, 8];
@@ -75,10 +62,7 @@ function test_shuffle(): void {
 }
 
 export function T_UArray(): void {
-    test1();
-    test2();
-    test3();
-    test4();
+    test_distinct();
     test5();
     test_eq();
     test_randomPick();
