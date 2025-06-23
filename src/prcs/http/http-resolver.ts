@@ -1,7 +1,7 @@
 import { Loggable } from "../../const/types";
 import { XjsErr } from "../../obj/xjs-err";
 import { HttpResolverContext } from "./http-resolver-context";
-import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
+import { ClientOption, HttpResponse, IHttpClient, RequestOption } from "./i-http-client";
 
 export interface ClientMode {
     id: number;
@@ -31,7 +31,7 @@ export class HttpResolver implements IHttpClient {
     newContext(op?: ClientOption): HttpResolverContext {
         return new HttpResolverContext(this.fixCmv(), op, this._l);
     }
-    async get(url: string, op?: RequestOption & ClientOption & { redirectAsNewRequest?: boolean }): Promise<any> {
+    async get(url: string, op?: RequestOption & ClientOption & { redirectAsNewRequest?: boolean }): Promise<HttpResponse> {
         let redirectCount = op?.redirectAsNewRequest && -1;
         const bindOp = () => {
             const option = Object.assign({}, op);
@@ -45,7 +45,7 @@ export class HttpResolver implements IHttpClient {
             else return await this.newContext(op).get(e.message, bindOp());
         }
     }
-    async post(url: string, payload: any, op?: RequestOption & ClientOption): Promise<any> {
+    async post(url: string, payload: any, op?: RequestOption & ClientOption): Promise<HttpResponse> {
         return await this.newContext(op).post(url, payload, op);
     }
     private fixCmv(): number {

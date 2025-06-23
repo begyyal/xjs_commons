@@ -1,4 +1,4 @@
-import { OutgoingHttpHeaders } from "http";
+import { IncomingHttpHeaders, OutgoingHttpHeaders } from "http";
 import { ClientMode, ProxyConfig } from "./http-resolver";
 import { s_clientMode } from "./http-resolver-context";
 
@@ -18,6 +18,16 @@ export interface RequestOption {
      */
     downloadPath?: string;
 }
+export interface HttpResponse {
+    /**
+     * http headers in the response.
+     */
+    headers?: IncomingHttpHeaders;
+    /**
+     * string encoded by utf-8 as response payload.
+     */
+    payload?: string;
+}
 export interface IHttpClient {
     /**
      * request GET to the url with new context.
@@ -28,9 +38,9 @@ export interface IHttpClient {
      * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
      * @param op.downloadPath {@link RequestOption.downloadPath}
      * @param op.redirectAsNewRequest handle redirect as new request. this may be efficient when using proxy which is implemented reverse proxy.
-     * @returns string encoded by utf-8 as response payload.
+     * @returns http response. {@link HttpResponse}
      */
-    get(url: string, op?: RequestOption & ClientOption & { redirectAsNewRequest?: boolean }): Promise<any>;
+    get(url: string, op?: RequestOption & ClientOption & { redirectAsNewRequest?: boolean }): Promise<HttpResponse>;
     /**
      * request POST to the url with new context.
      * @param url target url.
@@ -40,7 +50,7 @@ export interface IHttpClient {
      * @param op.proxy proxy configuration.
      * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
      * @param op.downloadPath {@link RequestOption.downloadPath}
-     * @returns string encoded by utf-8 as response payload.
+     * @returns http response. {@link HttpResponse}
      */
-    post(url: string, payload: any, op?: RequestOption & ClientOption): Promise<any>;
+    post(url: string, payload: any, op?: RequestOption & ClientOption): Promise<HttpResponse>;
 }

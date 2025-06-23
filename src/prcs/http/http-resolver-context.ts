@@ -10,7 +10,7 @@ import { UHttp } from "../../func/u-http";
 import { UArray } from "../../func/u-array";
 import { HttpMethod } from "../../const/http-method";
 import { ClientMode, ProxyConfig } from "./http-resolver";
-import { ClientOption, IHttpClient, RequestOption } from "./i-http-client";
+import { ClientOption, HttpResponse, IHttpClient, RequestOption } from "./i-http-client";
 import { UType } from "../../func/u-type";
 import { Loggable } from "../../const/types";
 import { UFile } from "../../func/u-file";
@@ -88,7 +88,7 @@ export class HttpResolverContext implements IHttpClient {
      * @param op.downloadPath {@link RequestOption.downloadPath}
      * @returns string encoded by utf-8 as response payload.
      */
-    async get(url: string, op?: RequestOption & { outerRedirectCount?: number }): Promise<any> {
+    async get(url: string, op?: RequestOption & { outerRedirectCount?: number }): Promise<HttpResponse> {
         const u = new URL(url);
         const proxyAgent = this._proxyConfig && await this.createProxyAgent(u);
         const rc = { redirectCount: op?.outerRedirectCount ?? 0, proxyAgent };
@@ -104,7 +104,7 @@ export class HttpResolverContext implements IHttpClient {
      * @param op.downloadPath {@link RequestOption.downloadPath}
      * @returns string encoded by utf-8 as response payload.
      */
-    async post(url: string, payload: any, op?: RequestOption): Promise<any> {
+    async post(url: string, payload: any, op?: RequestOption): Promise<HttpResponse> {
         const u = new URL(url);
         const proxyAgent = this._proxyConfig && await this.createProxyAgent(u);
         const rc = { redirectCount: 0, proxyAgent };
@@ -134,14 +134,14 @@ export class HttpResolverContext implements IHttpClient {
             req.end();
         });
     }
-    private getIn = async (u: URL): Promise<any> => {
+    private getIn = async (u: URL): Promise<HttpResponse> => {
         const params: RequestOptions = {};
         const rc = this._als.getStore();
         params.method = HttpMethod.Get;
         params.headers = rc.headers ?? {};
         return await this.reqHttps(u, params);
     };
-    private postIn = async (u: URL, payload: any): Promise<any> => {
+    private postIn = async (u: URL, payload: any): Promise<HttpResponse> => {
         const params: RequestOptions = {};
         const rc = this._als.getStore();
         params.method = HttpMethod.Post;
@@ -154,7 +154,7 @@ export class HttpResolverContext implements IHttpClient {
         }
         return await this.reqHttps(u, params, p);
     };
-    private reqHttps(u: URL, params: RequestOptions, payload?: any): Promise<any> {
+    private reqHttps(u: URL, params: RequestOptions, payload?: any): Promise<HttpResponse> {
         const rc = this._als.getStore();
         params.timeout = s_timeout;
         params.protocol = u.protocol;
@@ -166,7 +166,7 @@ export class HttpResolverContext implements IHttpClient {
             params.headers = params.headers ? Object.assign(params.headers, this._chHeaders) : this._chHeaders
         }
         if (this._cookies) this.setCookies(params.headers);
-        return new Promise<any>((resolve, reject) => {
+        return new Promise<HttpResponse>((resolve, reject) => {
             const req = requestTls(params,
                 (res: IncomingMessage) => this.processResponse(resolve, reject, rc, params.host, res));
             req.on('error', reject);
@@ -196,7 +196,7 @@ export class HttpResolverContext implements IHttpClient {
                 const stream = fs.createWriteStream(dest);
                 res.pipe(stream);
                 stream.on("finish", () => stream.close());
-                resolve({});
+                resolve({ headers: res.headers });
             } catch (e) {
                 this.error(e);
                 reject(new XjsErr(s_errCode, "Failed to download a file."));
@@ -216,7 +216,7 @@ export class HttpResolverContext implements IHttpClient {
                 if (sc !== 2) {
                     if (data.trim()) this.warn(data);
                     reject(new XjsErr(s_errCode, `Https received a error status ${res.statusCode}`));
-                } else resolve(data);
+                } else resolve({ payload: data, headers: res.headers });
             } catch (e) { reject(e); }
         });
     }
@@ -243,7 +243,7 @@ export class HttpResolverContext implements IHttpClient {
         }
         return appendFname("./");
     }
-    private async handleRedirect(res: IncomingMessage, host: string): Promise<any> {
+    private async handleRedirect(res: IncomingMessage, host: string): Promise<HttpResponse> {
         const rc = this._als.getStore();
         if (!res.headers.location) throw new XjsErr(s_errCode, "Received http redirection, but no location header found.");
         if (rc.redirectCount++ > s_redirectLimit) throw new XjsErr(s_errCode, "Count of http redirection exceeds limit.");

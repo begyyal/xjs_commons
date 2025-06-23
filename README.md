@@ -11,7 +11,7 @@ npm i xjs-common
 **NOTE**: The versions <= `v6.2.0` was unpublished. If you has been used these versions, please update to the version >= `v7.0.0`.
 
 # Code example (only part)
- - Miscellaneous utilities.
+### Miscellaneous utilities.
 ```ts
 import { checkPortAvailability, delay, int2array, UFile, UHttp, retry } from "xjs-common";
 
@@ -41,7 +41,7 @@ import { checkPortAvailability, delay, int2array, UFile, UHttp, retry } from "xj
     UFile.mkdir(["path", "to", "dir"]);
 })();
 ```
- - Array utilities.
+### Array utilities.
 ```ts
 import { UArray } from "xjs-common";
 
@@ -70,7 +70,7 @@ import { UArray } from "xjs-common";
     console.log(UArray.randomPick(ary3));
 })();
 ```
- - String utilities.
+### String utilities.
 ```ts
 import { UString } from "xjs-common";
 
@@ -94,7 +94,7 @@ import { UString } from "xjs-common";
     console.log(UString.simpleTime({ date: getJSTDate(), unit: TimeUnit.Day }));
 })();
 ```
- - Http client enhanced for web scraping.
+### Enhanced http client.
 ```ts
 import { HttpResolver, s_clientMode } from "xjs-common";
 
@@ -103,28 +103,29 @@ import { HttpResolver, s_clientMode } from "xjs-common";
     // const http = new HttpResolver(chromeMajorVersion, logger);
     const http = new HttpResolver();
 
-    // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
-    let body = await http.get("https://begyyal.net", { mode: s_clientMode.chrome });
+    // implicitly corresponds to cookies and redirect, and do randomization.
+    let res = await http.get("https://begyyal.net");
+    const { payload, headers } = res;
 
     // use proxy by passing the configuration.
     const proxy = { server: "proxy.sample.com", port: 8080, auth: { name: "prx", pass: "****" } }
-    body = await http.post("https://begyyal.net", { proxy });
+    res = await http.post("https://begyyal.net", { proxy });
 
-    // implicitly corresponds to cookies and redirect, and do randomization.
-    body = await http.get("https://begyyal.net");
+    // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
+    res = await http.get("https://begyyal.net", { mode: s_clientMode.chrome });
 
     // download a file when [Content-Disposition: attachment] exists in the response.
     await http.get("https://begyyal.net/a.txt", { downloadPath: "/path/to/store" });
 
     // if you want to keep some states of requests (and suppress to randomize), it can create new context to do.
     const context = http.newContext();
-    body = await context.get("https://begyyal.net/1");
+    res = await context.get("https://begyyal.net/1");
     // this request sends with cookies that is set by precedent requests. 
     // in POST, payload is treated as json if it is an object.
-    body = await context.post("https://begyyal.net/2", { a: "b" });
+    res = await context.post("https://begyyal.net/2", { a: "b" });
 })();
 ```
- - Mark method as transaction.  
+### Mark method as transaction.  
 **NOTE**: this feature uses decorator, so requires `"experimentalDecorators": true` in tsconfig.
 ```ts
 import { transaction, delay } from "xjs-common";
@@ -149,7 +150,7 @@ class Cls {
     console.log(e);
 });
 ```
- - Validate and crop class fields.  
+### Validate and crop class fields.  
 **NOTE**: this feature uses decorator, so requires `"experimentalDecorators": true` in tsconfig.  
 **NOTE**: some functionalities  in this feature are based on `"useDefineForClassFields": true` in tsconfig.  
 this flag is true by default at the target higher than `ES2022`, [here is for more](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields).
