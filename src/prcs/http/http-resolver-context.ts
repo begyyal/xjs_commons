@@ -1,6 +1,7 @@
 import * as tls from "tls";
 import * as zlib from "zlib";
 import * as fs from "fs";
+import * as path from "path";
 import { URL } from "url";
 import { Agent, request as requestTls, RequestOptions } from "https";
 import { request, IncomingMessage, OutgoingHttpHeaders } from "http";
@@ -198,7 +199,7 @@ export class HttpResolverContext implements IHttpClient {
                 stream.on("finish", () => stream.close());
                 resolve({ headers: res.headers });
             } catch (e) {
-                if (e instanceof XjsErr) throw e;
+                if (e instanceof XjsErr) reject(e);
                 else {
                     this.error(e);
                     reject(new XjsErr(s_errCode, "Failed to download a file."));
@@ -234,9 +235,7 @@ export class HttpResolverContext implements IHttpClient {
         if (opPath) {
             const st = UFile.status(opPath);
             if (!st || st.isFile()) {
-                const pathArray = opPath.split("/");
-                pathArray.pop();
-                if (!UFile.exists(pathArray)) throw new XjsErr(s_errCode, "Directory of the download path was not found.");
+                if (!UFile.exists(path.dirname(opPath))) throw new XjsErr(s_errCode, "Directory of the download file was not found.");
                 return opPath;
             }
             if (st.isDirectory()) {
