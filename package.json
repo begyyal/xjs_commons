@@ -1,6 +1,6 @@
 {
   "name": "xjs-common",
-  "version": "9.1.0-alpha.2",
+  "version": "9.1.0-alpha.3",
   "description": "library modules for nodejs + typescript that bundled general-purpose implementations.",
   "repository": {
     "type": "git",
