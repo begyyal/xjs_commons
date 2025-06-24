@@ -1,5 +1,7 @@
-import { Loggable } from "../const/types";
+import * as path from "path";
+import { Loggable, MaybeArray } from "../const/types";
 import { XjsErr } from "../obj/xjs-err";
+import { UType } from "./u-type";
 
 const s_errCode = 10;
 
@@ -74,4 +76,7 @@ export function retry<T>(cb: () => T | Promise<T>, op?: RetryOption): T | Promis
         return ret instanceof Promise ? ret.then(() => innerPrcs()) : innerPrcs();
     };
     return prcs(initialCount);
+}
+export function joinPath(...p: MaybeArray<string>[]): string {
+    return path.join(...p.flatMap(UType.takeAsArray));
 }

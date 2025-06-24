@@ -111,6 +111,11 @@ export namespace UFile {
             throw new XjsErr(s_errCode, "Something went wrong at unzip.", e);
         }
     }
+    /**
+     * @deprecated since v9.1.4
+     * @removed this will be removed in v10.
+     * @replaced it should uses this without namespace `UFile`.
+     */
     export function joinPath(...p: MaybeArray<string>[]): string {
         return path.join(...p.flatMap(UType.takeAsArray));
     }
