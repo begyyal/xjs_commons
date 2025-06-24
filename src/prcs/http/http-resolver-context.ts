@@ -71,15 +71,15 @@ export class HttpResolverContext implements IHttpClient {
     private readonly _proxyConfig?: ProxyConfig;
     private readonly _chHeaders: Record<string, string>;
     private _cookies?: Record<string, string>;
+    get clientMode() { return Object.keys(s_clientMode).find((_, i) => i === this._mode.id); }
     constructor(
-        private readonly _cmv: number,
+        public readonly cmv: number,
         op?: ClientOption,
         private _l: Loggable = console) {
         this._mode = op?.mode ?? UArray.randomPick([s_clientMode.chrome, s_clientMode.firefox]);
         this._ciphers = this.createCiphers(this._mode);
         this._proxyConfig = op?.proxy;
-        this._chHeaders = s_mode2headers.get(this._mode)(this._cmv);
-        this._l.log(`Context launched with ${Object.keys(s_clientMode).find((_, i) => i === this._mode.id)}:${this._cmv}.`);
+        this._chHeaders = s_mode2headers.get(this._mode)(this.cmv);
     }
     /**
      * request GET to the url.
