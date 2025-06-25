@@ -17,6 +17,10 @@ export interface RequestOption {
      * default is current directory of the process with `filename` of the disposition.
      */
     downloadPath?: string;
+    /**
+     * timeout milliseconds to wait for socket inactivity. default is infinity.
+     */
+    timeout?: number;
 }
 export interface HttpResponse {
     /**
@@ -37,6 +41,7 @@ export interface IHttpClient {
      * @param op.proxy proxy configuration.
      * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
      * @param op.downloadPath {@link RequestOption.downloadPath}
+     * @param op.timeout {@link RequestOption.timeout}
      * @param op.redirectAsNewRequest handle redirect as new request. this may be efficient when using proxy which is implemented reverse proxy.
      * @returns http response. {@link HttpResponse}
      */
@@ -50,6 +55,7 @@ export interface IHttpClient {
      * @param op.proxy proxy configuration.
      * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
      * @param op.downloadPath {@link RequestOption.downloadPath}
+     * @param op.timeout {@link RequestOption.timeout}
      * @returns http response. {@link HttpResponse}
      */
     post(url: string, payload: any, op?: RequestOption & ClientOption): Promise<HttpResponse>;

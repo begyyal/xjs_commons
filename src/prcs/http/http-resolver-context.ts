@@ -16,6 +16,7 @@ import { UType } from "../../func/u-type";
 import { Loggable } from "../../const/types";
 import { UFile } from "../../func/u-file";
 import { UString } from "../../func/u-string";
+import { joinPath } from "../../func/u";
 
 interface RequestContext extends RequestOption {
     redirectCount: number;
@@ -27,7 +28,6 @@ export const s_clientMode: Record<string, ClientMode> = {
     chrome: { id: 1, cipherOrder: [2, 0, 1] },
     firefox: { id: 2, cipherOrder: [2, 1, 0] }
 };
-const s_timeout = 1000 * 20;
 const s_errCode = 200;
 const s_redirectLimit = 5;
 const s_mode2headers = new Map<ClientMode, (cmv: number) => (Record<string, string>)>([
@@ -87,6 +87,7 @@ export class HttpResolverContext implements IHttpClient {
      * @param op.headers http headers.
      * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
      * @param op.downloadPath {@link RequestOption.downloadPath}
+     * @param op.timeout {@link RequestOption.timeout}
      * @returns string encoded by utf-8 as response payload.
      */
     async get(url: string, op?: RequestOption & { outerRedirectCount?: number }): Promise<HttpResponse> {
@@ -103,6 +104,7 @@ export class HttpResolverContext implements IHttpClient {
      * @param op.headers http headers.
      * @param op.ignoreQuery {@link RequestOption.ignoreQuery}
      * @param op.downloadPath {@link RequestOption.downloadPath}
+     * @param op.timeout {@link RequestOption.timeout}
      * @returns string encoded by utf-8 as response payload.
      */
     async post(url: string, payload: any, op?: RequestOption): Promise<HttpResponse> {
@@ -157,7 +159,7 @@ export class HttpResolverContext implements IHttpClient {
     };
     private reqHttps(u: URL, params: RequestOptions, payload?: any): Promise<HttpResponse> {
         const rc = this._als.getStore();
-        params.timeout = s_timeout;
+        params.timeout = rc.timeout ?? 0;
         params.protocol = u.protocol;
         params.host = u.host;
         params.path = (rc.ignoreQuery || !u.search) ? u.pathname : `${u.pathname}${u.search}`;
@@ -232,7 +234,7 @@ export class HttpResolverContext implements IHttpClient {
                 .find(f => f.trim().startsWith("filename"))
                 ?.replace(/^\s+filename\s+=/, "").trim()
                 ?? UFile.reserveFilePath(d, `xjs-download_${UString.simpleTime()}`);
-            return UFile.joinPath(d, fname);
+            return joinPath(d, fname);
         };
         if (opPath) {
             const st = UFile.status(opPath);
