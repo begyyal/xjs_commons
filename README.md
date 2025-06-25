@@ -8,11 +8,13 @@ This module is very simple, therefore it has no dependencies.
 ```
 npm i xjs-common
 ```
+**NOTE**: features related nodejs was moved to [xjs-node](https://github.com/begyyal/xjs_node) at v10.0.0.  
+if you has been used the features (e.g. `HttpResolver`, `UFile`), please use the new package instead of this.
 
 # Code example (only part)
 ### Miscellaneous utilities.
 ```ts
-import { checkPortAvailability, delay, int2array, UFile, UHttp, retry } from "xjs-common";
+import { delay, int2array, UHttp, retry, MaybeArray, Loggable } from "xjs-common";
 
 (async () => {
     // await 3 seconds.
