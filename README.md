@@ -1,14 +1,13 @@
 [![npm][npm-badge]][npm-url] [![CI][ci-badge]][ci-url]
 
 # Overview
-Library modules for nodejs + typescript that bundled general-purpose implementations.  
+Library modules for typescript that bundled general-purpose implementations.  
 This module is very simple, therefore it has no dependencies.
 
 # Install
 ```
 npm i xjs-common
 ```
-**NOTE**: The versions <= `v6.2.0` was unpublished. If you has been used these versions, please update to the version >= `v7.0.0`.
 
 # Code example (only part)
 ### Miscellaneous utilities.
@@ -22,8 +21,12 @@ import { checkPortAvailability, delay, int2array, UFile, UHttp, retry } from "xj
     // [ 0, 1, 2, 3, 4 ]
     console.log(int2array(5));
 
-    if (await checkPortAvailability(8080)) console.log("available.");
-    else console.log("not available.");
+    // runs callback with customizable retry.
+    retry(async () => { }, { count: 2 });
+
+    // utility types
+    let maybeArray: MaybeArray<number> = 0; // also number array is applicable.
+    let logger: Loggable = console; // object implements log/warn/error is applicable.
 
     // true
     console.log(UHttp.isHttpSuccess(204));
@@ -32,13 +35,6 @@ import { checkPortAvailability, delay, int2array, UFile, UHttp, retry } from "xj
     console.log(UHttp.concatParamsWithEncoding("https://aaa.com", { p1: "a", p2: ["1", "2"] }));
     // p1=a&p2=1&p2=2
     console.log(UHttp.concatParamsWithEncoding(null, { p1: "a", p2: ["1", "2"] }));
-
-    // runs callback with customizable retry.
-    retry(async () => { }, { count: 2 });
-
-    // concatenate file path and make directory if doesn't already exist.
-    UFile.mkdir("path/to/dir");
-    UFile.mkdir(["path", "to", "dir"]);
 })();
 ```
 ### Array utilities.
@@ -92,37 +88,6 @@ import { UString } from "xjs-common";
     console.log(UString.simpleTime());
     // e.g. 20250615
     console.log(UString.simpleTime({ date: getJSTDate(), unit: TimeUnit.Day }));
-})();
-```
-### Enhanced http client.
-```ts
-import { HttpResolver, s_clientMode } from "xjs-common";
-
-(async () => {
-    // can customize logging. (default is console.)
-    // const http = new HttpResolver(chromeMajorVersion, logger);
-    const http = new HttpResolver();
-
-    // implicitly corresponds to cookies and redirect, and do randomization.
-    let res = await http.get("https://begyyal.net");
-    const { payload, headers } = res;
-
-    // use proxy by passing the configuration.
-    const proxy = { server: "proxy.sample.com", port: 8080, auth: { name: "prx", pass: "****" } }
-    res = await http.post("https://begyyal.net", { proxy });
-
-    // switch tls ciphers order pattern by passing clientMode. (default is random between chrome or firefox.)
-    res = await http.get("https://begyyal.net", { mode: s_clientMode.chrome });
-
-    // download a file when [Content-Disposition: attachment] exists in the response.
-    await http.get("https://begyyal.net/a.txt", { downloadPath: "/path/to/store" });
-
-    // if you want to keep some states of requests (and suppress to randomize), it can create new context to do.
-    const context = http.newContext();
-    res = await context.get("https://begyyal.net/1");
-    // this request sends with cookies that is set by precedent requests. 
-    // in POST, payload is treated as json if it is an object.
-    res = await context.post("https://begyyal.net/2", { a: "b" });
 })();
 ```
 ### Mark method as transaction.  
@@ -216,9 +181,7 @@ XJS throws error with `code` property which has one of the following numbers.
 |10|`func/u`|
 |20|`func/u-string`|
 |30|`func/u-type` (include `func/decorator/d-type`) |
-|40|`func/u-file` |
 |100|`func/decorator/transaction`|
-|200|`prcs/http/http-resolver`|
 
 # License
 [Apache-License](./LICENSE)

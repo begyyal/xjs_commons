@@ -1,7 +1,5 @@
-import * as path from "path";
-import { Loggable, MaybeArray } from "../const/types";
+import { Loggable } from "../const/types";
 import { XjsErr } from "../obj/xjs-err";
-import { UType } from "./u-type";
 
 const s_errCode = 10;
 
@@ -27,14 +25,6 @@ export function array2map<K, T>(array: T[], keyGen: (e: T) => K): Map<K, T[]> {
 }
 export function bitor(...bit: number[]): number {
     return bit.reduce((a, b) => a | b);
-}
-export function checkPortAvailability(port: number): Promise<boolean> {
-    return new Promise(resolve => {
-        const server = require('net').createServer();
-        server.once('error', () => resolve(false))
-            .once('listening', () => { server.close(); resolve(true); })
-            .listen(port);
-    });
 }
 export interface RetryOption<T = void | Promise<void>> {
     count?: number;
@@ -76,7 +66,4 @@ export function retry<T>(cb: () => T | Promise<T>, op?: RetryOption): T | Promis
         return ret instanceof Promise ? ret.then(() => innerPrcs()) : innerPrcs();
     };
     return prcs(initialCount);
-}
-export function joinPath(...p: MaybeArray<string>[]): string {
-    return path.join(...p.flatMap(UType.takeAsArray));
 }

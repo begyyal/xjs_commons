@@ -1,13 +1,13 @@
 {
   "name": "xjs-common",
-  "version": "9.1.7",
-  "description": "library modules for nodejs + typescript that bundled general-purpose implementations.",
+  "version": "10.0.0",
+  "description": "library modules for typescript that bundled general-purpose implementations.",
   "repository": {
     "type": "git",
     "url": "https://github.com/begyyal/xjs_commons"
   },
   "keywords": [
-    "nodejs",
+    "javascript",
     "typescript",
     "utility"
   ],
@@ -24,7 +24,6 @@
   "main": "./dist/index",
   "types": "./dist/index.d.ts",
   "devDependencies": {
-    "@types/node": "^20.3.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5"
   }
