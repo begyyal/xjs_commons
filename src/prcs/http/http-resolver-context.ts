@@ -23,7 +23,7 @@ interface RequestContext extends RequestOption {
     proxyAgent?: Agent;
     outerRedirectCount?: number;
 }
-export const s_clientMode: Record<string, ClientMode> = {
+export const s_clientMode = {
     nodejs: { id: 0, cipherOrder: null },
     chrome: { id: 1, cipherOrder: [2, 0, 1] },
     firefox: { id: 2, cipherOrder: [2, 1, 0] }
@@ -77,9 +77,11 @@ export class HttpResolverContext implements IHttpClient {
         op?: ClientOption,
         private _l: Loggable = console) {
         this._mode = op?.mode ?? UArray.randomPick([s_clientMode.chrome, s_clientMode.firefox]);
-        this._ciphers = this.createCiphers(this._mode);
         this._proxyConfig = op?.proxy;
-        this._chHeaders = s_mode2headers.get(this._mode)(this.cmv);
+        if (this._mode.id > 0) {
+            this._ciphers = this.createCiphers(this._mode);
+            this._chHeaders = s_mode2headers.get(this._mode)(this.cmv);
+        }
     }
     /**
      * request GET to the url.
