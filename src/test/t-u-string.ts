@@ -35,9 +35,39 @@ function test_simpleTime(): void {
     if (!UString.is_yyyy(year))
         throw Error(`[UString.simpleTime()] returned inconsistent string with year time unit. ${year}`);
 }
+function test_asUsd(): void {
+    let actual = null;
+    if ((actual = UString.asUsd(1000000)) !== "$1,000,000")
+        throw Error(`[UString.asUsd()] number value was not formatted incorrectly. actual => ${actual}`);
+    if ((actual = UString.asUsd(11.111)) !== "$11.11")
+        throw Error(`[UString.asUsd()] number value was not formatted incorrectly. actual => ${actual}`);
+    if ((actual = UString.asUsd(0)) !== "$0" || (actual = UString.asUsd(null)) !== "")
+        throw Error(`[UString.asUsd()] number value was not formatted incorrectly. actual => ${actual}`);
+}
+function test_asJpy(): void {
+    let actual = null;
+    if ((actual = UString.asJpy(1000000)) !== "¥1,000,000")
+        throw Error(`[UString.asJpy()] number value was not formatted incorrectly. actual => ${actual}`);
+    if ((actual = UString.asJpy(11.111)) !== "¥11")
+        throw Error(`[UString.asJpy()] number value was not formatted incorrectly. actual => ${actual}`);
+    if ((actual = UString.asJpy(0)) !== "¥0" || (actual = UString.asJpy(null)) !== "")
+        throw Error(`[UString.asJpy()] number value was not formatted incorrectly. actual => ${actual}`);
+}
+function test_asPercentage(): void {
+    let actual = null;
+    if ((actual = UString.asPercentage(1)) !== "100%")
+        throw Error(`[UString.asUsd()] number value was not formatted incorrectly. actual => ${actual}`);
+    if ((actual = UString.asPercentage(0.12345)) !== "12.35%")
+        throw Error(`[UString.asUsd()] number value was not formatted incorrectly. actual => ${actual}`);
+    if ((actual = UString.asPercentage(0)) !== "0%" || (actual = UString.asPercentage(null)) !== "")
+        throw Error(`[UString.asUsd()] number value was not formatted incorrectly. actual => ${actual}`);
+}
 
 export function T_UString(): void {
     test_timeFormatValidations();
     test_simpleTime();
+    test_asUsd();
+    test_asJpy();
+    test_asPercentage();
     console.log("tests in T_UString completed.");
 }

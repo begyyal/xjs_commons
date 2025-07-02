@@ -48,6 +48,32 @@ export namespace UString {
         return az.toLowerCase().split("").map(c => c.charCodeAt(0) - 97).reverse()
             .map((idx, i) => (idx + 1) * (26 ** i)).reduce((v1, v2) => v1 + v2) - 1;
     }
+    function asAmount(amount: number, unit: string): string {
+        const int2dec = amount.toString().split(".");
+        const etni = int2dec[0].split("").reverse().join("");
+        let fetni = "";
+        const max = Math.ceil(etni.length / 3);
+        for (let i = 0; i < max; i++) {
+            if (i === max - 1) fetni += etni.substring(i * 3);
+            else fetni += (etni.substring(i * 3, (i + 1) * 3) + ",");
+        }
+        const finte = unit + fetni.split("").reverse().join("");
+        if (int2dec.length === 1) return finte;
+        else return finte + "." + int2dec[1];
+    }
+    export function asJpy(amount: number): string {
+        return UType.isEmpty(amount) ? "" : asAmount(Math.floor(amount), "¥");
+    }
+    export function asUsd(amount: number): string {
+        return UType.isEmpty(amount) ? "" : asAmount(Number(amount.toFixed(2)), "$");
+    }
+    export function asPercentage(amount: number): string {
+        if (UType.isEmpty(amount)) return "";
+        let percent = (amount * 100).toFixed(2);
+        while (percent.endsWith("0")) percent = percent.substring(0, percent.length - 1);
+        if (percent.endsWith(".")) percent = percent.substring(0, percent.length - 1);
+        return percent + "%";
+    }
     export function is_yyyy(v: string): boolean {
         return !!v?.match(/^[1-9]\d{3}$/);
     }
